@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-family: 'Inter', sans-serif;
+}
+
+:root {
+  --primary-color: #8A1717;
+  --primary-dark: #6C1212; 
+  --primary-light: #A42525;
+
+  --secondary-color: #C55B5B;
+  --secondary-dark: #A54B4B; 
+  --secondary-light: #E07B7B;
+
+  --background-color: #f8f8f8;
+  --text-color: #1a1a1a;
+  --light-text-color: #f1f1f1;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-secondary {
+  color: var(--secondary-color);
+}
+
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.bg-secondary {
+  background-color: var(--secondary-color);
+}
+
+.button {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.button.primary {
+  background-color: var(--primary-color);
+  color: var(--light-text-color);
+}
+
+.button.primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.button.secondary {
+  background-color: var(--secondary-color);
+  color: var(--light-text-color);
+}
+
+.button.secondary:hover {
+  background-color: var(--secondary-dark);
+}
