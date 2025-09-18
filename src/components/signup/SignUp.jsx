@@ -4,6 +4,7 @@ import FloatingLabelInput from '../styling/FloatingLabelInput.jsx';
 import { auth, db } from '../../firebase.js'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import HighlightSlider from '../styling/HighlightSlider.jsx';
+import { useNavigate } from 'react-router-dom'; 
 
 function SignUp({ toggleAuthMode }) {
     const [nik, setNik] = useState('');
@@ -15,6 +16,7 @@ function SignUp({ toggleAuthMode }) {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const createUserDocument = async (user, additionalData) => {
         const userDocRef = doc(db, 'users', user.uid);
@@ -62,6 +64,9 @@ function SignUp({ toggleAuthMode }) {
 
             await createUserDocument(user, additionalData);
             setSuccess("Pendaftaran berhasil!");
+            
+            // Arahkan ke Dashboard
+            navigate('/', { replace: true }); 
 
         } catch (err) {
             switch (err.code) {

@@ -4,6 +4,8 @@ import FloatingLabelInput from '../styling/FloatingLabelInput.jsx';
 import { collection, query, getDocs, where } from 'firebase/firestore';
 import { auth, db } from '../../firebase.js';
 import HighlightSlider from '../styling/HighlightSlider.jsx';
+import { useNavigate } from 'react-router-dom'; 
+import { useAuth } from '../../hooks/AuthContext.jsx'; 
 
 function SignIn({ toggleAuthMode }) {
     const [nik, setNik] = useState('');
@@ -13,6 +15,9 @@ function SignIn({ toggleAuthMode }) {
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const [isForgotPasswordView, setIsForgotPasswordView] = useState(false);
+    
+    const navigate = useNavigate(); 
+    const { refreshUserData } = useAuth(); 
 
     const handleSignIn = async (e) => {
         e.preventDefault();
@@ -52,7 +57,12 @@ function SignIn({ toggleAuthMode }) {
 
             // Lakukan sign in dengan email yang sudah didapatkan
             await signInWithEmailAndPassword(auth, userEmailToLogin, password);
+            
+            await refreshUserData(); 
             setSuccess("Login berhasil!");
+            
+            // Arahkan ke Dashboard
+            navigate('/', { replace: true }); 
 
         } catch (err) {
             // Error handling yang lebih umum untuk login
@@ -110,7 +120,6 @@ function SignIn({ toggleAuthMode }) {
             setError('Gagal mengirim email. Pastikan email yang Anda masukkan sudah terdaftar.');
             console.error("Error sending reset email:", err);
         } finally {
-            // Pastikan loading selalu berhenti, baik berhasil maupun gagal
             setLoading(false);
         }
     };
