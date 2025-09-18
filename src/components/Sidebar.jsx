@@ -31,7 +31,7 @@ const Sidebar = () => {
 
         <div className="flex items-center justify-center md:justify-start h-16 w-full mb-8 px-4">
           <img src={logoDemokratos} alt="Demokratos Logo" className="w-10 h-10 transition-transform duration-300 ease-in-out" />
-          <span className="hidden md:group-hover:block text-xl font-bold ml-3 text-primary transition-opacity duration-300 opacity-0 group-hover:opacity-100">Demokratos</span>
+          <span className="hidden md:group-hover:block text-xl font-semibold ml-3 text-primary transition-opacity duration-300 opacity-0 group-hover:opacity-100">Demokratos</span>
         </div>
 
         <nav className="flex-1 w-full">
