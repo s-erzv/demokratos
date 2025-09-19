@@ -11,6 +11,7 @@ import SignUp from './components/signup/SignUp.jsx';
 import Profile from './pages/Profile.jsx'; 
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
+import Landing from './pages/Landing';
 
 // Hapus kode yang dikomen di bawah ini jika tidak digunakan
 // const router = createBrowserRouter ([
@@ -27,6 +28,7 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <Routes>
           {/* Rute Publik: Sign In dan Sign Up */}
+          <Route path='/welcome' element={<Landing/>}/>
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
 

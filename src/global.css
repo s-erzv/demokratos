@@ -77,3 +77,7 @@ body {
 .button.secondary:hover {
   background-color: var(--secondary-dark);
 }
+
+html {
+    scroll-behavior: smooth;
+}
