@@ -26,7 +26,7 @@ const Hero = () => {
               Daftar Sekarang
             </button>
             <button className="md:px-10 md:py-4 px-5 py-2 sm:py-3 sm:px-6 duration-200 2xl:text-3xl lg:text-2xl md:text-2xl sm:text-sm text-xs rounded-full relative border-2 border-secondary z-10 group">
-              <a href="/#flow" className="absolute inset-0 h-full w-full rounded-full z-10"></a>
+              <a href="/welcome#flow" className="absolute inset-0 h-full w-full rounded-full z-10"></a>
               <p className="z-10 text-primary">Berikan Suara</p>
               <div className="h-full w-full bg-white blur-sm absolute inset-0 rounded-full opacity-50 -z-10 group-hover:opacity-100 duration-150"></div>
             </button>

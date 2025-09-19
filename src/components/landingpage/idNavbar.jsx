@@ -14,35 +14,26 @@ const IdNavbar = () => {
       <div className="w-full flex flex-row  items-center z-50 relative">
         <div className="h-full w-full absolute animate-translucent [animation-timeline:scroll(root)] bg-white/50 backdrop-blur-2xl -z-10 border-b-2 border-white/70"></div>
         <div className="w-full flex flex-row items-center md:justify-around justify-between md:p-4 py-3 px-5 sm:px-10">
-          <div className="flex justify-center items-center gap-5 2xl:gap-7">
-            <img src="/logoDemokratos.svg" alt="Demokratos Logo" className='2xl:size-15 size-10 block' />
-              <a className="lg:text-4xl md:text-2xl 2xl:text-4xl text-lg font-bold" href="/#hero">
-               Demokratos
-              </a>
-          </div>
+          <a className="lg:text-4xl md:text-2xl 2xl:text-3xl text-lg font-bold text-primary" href="/welcome#hero">
+            Demokratos
+          </a>
         
           <div className="flex flex-row gap-10 2xl:text-2xl text-xl max-md:hidden 2xl:gap-13">
             <a
               className="hover:border-b-2 border-hover-button duration-100 hover:scale-105"
-              href="/#features"
+              href="/welcome#features"
             >
               Features
             </a>
             <a
               className="hover:border-b-2 border-hover-button duration-100 hover:scale-105"
-              href="/#demo"
-            >
-              Demo
-            </a>
-            <a
-              className="hover:border-b-2 border-hover-button duration-100 hover:scale-105"
-              href="/#flow"
+              href="/welcome#flow"
             >
               How it Works
             </a>
             <a
               className="hover:border-b-2 border-hover-button duration-100 hover:scale-105"
-              href="/#team"
+              href="/welcome#team"
             >
               Our Team
             </a>
