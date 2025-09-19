@@ -15,13 +15,13 @@ const IdNavbar = () => {
         <div className="h-full w-full absolute animate-translucent [animation-timeline:scroll(root)] bg-white/50 backdrop-blur-2xl -z-10 border-b-2 border-white/70"></div>
         <div className="w-full flex flex-row items-center md:justify-around justify-between md:p-4 py-3 px-5 sm:px-10">
           <div className="flex justify-center items-center gap-5 2xl:gap-7">
-            <img src="/logo light.svg" alt="Planix Logo" className='2xl:size-15 size-10 block' />
-              <a className="lg:text-4xl md:text-2xl 2xl:text-5xl text-lg font-bold" href="/#hero">
-               Planix
+            <img src="/logoDemokratos.svg" alt="Demokratos Logo" className='2xl:size-15 size-10 block' />
+              <a className="lg:text-4xl md:text-2xl 2xl:text-4xl text-lg font-bold" href="/#hero">
+               Demokratos
               </a>
           </div>
         
-          <div className="flex flex-row gap-10 2xl:text-3xl text-xl max-md:hidden 2xl:gap-13">
+          <div className="flex flex-row gap-10 2xl:text-2xl text-xl max-md:hidden 2xl:gap-13">
             <a
               className="hover:border-b-2 border-hover-button duration-100 hover:scale-105"
               href="/#features"
@@ -52,7 +52,7 @@ const IdNavbar = () => {
             onClick={handleGetStartedClick}
             className="2xl:text-2xl md:text-lg sm:text-sm text-xs bg-primary duration-200 origin-left rounded-full relative group flex items-center overflow-hidden">
               <div className="w-full h-full absolute bg-hover-button scale-x-0 group-hover:scale-x-100 duration-500 origin-left rounded-full inset-0 ease-in-out"></div>
-              <p className="py-2 px-4 2xl:py-4 2xl:text-2xl 2xl:px-6 z-50 text-white font-semibold ">Get Started</p>
+              <p className="py-2 px-4 2xl:text-xl 2xl:px-6 z-50 text-white font-semibold ">Get Started</p>
             </button>
             <img
               src={Hamburger}
