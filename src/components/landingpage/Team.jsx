@@ -22,25 +22,24 @@ const Team = () => {
   `
 
   return (
-    <div className='h-full w-full flex flex-col items-center justify-center gap-10 lg:px-20  p-6 sm:px-15 pb-10 bg-[url("/landingpage/heroBg.svg")]'>
+    <div className='h-full w-full flex flex-col items-center justify-center gap-10 lg:px-20 relative  p-6 sm:px-15 pb-10 bg-[url("/landingpage/heroBg.svg")] z-10'>
+      <div className="h-screen w-full bg-gradient-to-b from-neutral-100 to-transparent from-30% flex flex-col items-center justify-center gap-10 absolute inset-0 -z-10"></div>
       <div
         className="h-full w-full flex flex-col items-center justify-center gap-10 sm:pt-25 pt-15"
         id="team">
         <div className="flex flex-col sm:items-center items-start justify-center gap-5 animate-slideDown [animation-timeline:view()]">
-          <p className="border-1 rounded-full sm:py-3 py-2 px-6 md:text-base sm:text-sm text-xs">
-            The Humans Behind the Vision
-          </p>
+          <p className='py-1 px-4 sm:py-2 sm:px-5 rounded-full md:text-base sm:text-sm text-xs border-2 border-neutral-400/50 bg-white text-primary'>Tim di Balik Aplikasi</p>
           <h2 className="md:text-5xl sm:text-4xl text-3xl font-semibold sm:text-center">
-            <span>Designing tools </span> 
-            <span className="text-primary">for people, by people</span>
+            <span>Membangun Alat </span> 
+            <span className="text-primary">untuk Rakyat, oleh Rakyat</span>
           </h2>
           <p className="md:text-2xl sm:text-sm text-xs font-medium sm:text-center md:px-5 lg:px-40">
-            We’re a small multidisciplinary team of planners, engineers, and
-            designers crafting AI-powered tools to make regional planning
-            faster, smarter, and more human-centered.
+            Kami adalah tim yang percaya bahwa suara warga harus mudah disampaikan dan benar-benar didengar. Karena itu, 
+            kami membangun aplikasi ini untuk mempermudah pelaporan masalah, voting kebijakan, dan diskusi publik dalam 
+            satu tempat.
           </p>
         </div>
-        <div className="w-full grid md:grid-cols-3 gap-10">
+        <div className="h-full w-full grid md:grid-cols-3 gap-10">
           <div className="md:h-125 w-full h-100 group flex justify-center animate-slideLeft [animation-timeline:view()]">
             <div className="p-3 lg:w-100 md:w-60 bg-card rounded-2xl h-full sm:w-1/2 w-full md:group-hover:rotate-y-180 max-md:group-active:rotate-y-180 duration-300 shadow-2xl">
               <div className="bg-[url('/landingpage/Juna.svg')] h-full w-full bg-cover bg-center rounded-2xl md:group-hover:hidden max-md:group-active:hidden">
@@ -175,7 +174,6 @@ const Team = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import IdNavbar from '../components/landingpage/idNavBar'
 import Features from '../components/landingpage/Features'
 import Flow from '../components/landingpage/Flow'
 import Team from '../components/landingpage/Team'
+import Footer from '../components/landingpage/Footer'
 
 const Landing = () => {
   return (
@@ -14,6 +15,7 @@ const Landing = () => {
         <Features/>
         <Flow/>
         <Team/>
+        <Footer/>
     </div>
   )
 }
