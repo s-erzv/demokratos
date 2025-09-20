@@ -6,7 +6,7 @@ import './global.css';
 
 import Dashboard from './pages/Dashboard';
 import PolicyVoting from './pages/PolicyVoting.jsx';
-import SignIn from './components/signin-temp/signin.jsx';
+import SignIn from './components/signin/signin.jsx';
 import SignUp from './components/signup/SignUp.jsx';
 import Profile from './pages/Profile.jsx'; 
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
