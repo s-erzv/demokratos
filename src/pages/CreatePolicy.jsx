@@ -1,53 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, UploadCloud, ChevronDown, Loader2, PlusCircle } from 'lucide-react'; 
+import React, { useState } from 'react';
+import MainLayout from '../components/MainLayout';
+import FloatingLabelInput from '../components/styling/FloatingLabelInput';
+import { Calendar, UploadCloud, ChevronDown } from 'lucide-react'; 
+// Import functions untuk memanggil Cloud Function
+import { db, storage, functions } from '../firebase'; 
+import { httpsCallable } from 'firebase/functions'; // Import httpsCallable
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/AuthContext'; 
-import { useCreatePolicy } from '../../hooks/useCreatePolicy'; // Hook Logika tetap dipakai
 
-const InputStyle = "w-full border border-gray-300 rounded-full py-2.5 px-4 bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all";
-const LabelStyle = "text-sm font-medium text-gray-700 block mb-1";
-const FileButton = "flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 rounded-full py-2 px-4 cursor-pointer hover:bg-gray-200 transition-colors";
+const createPolicyCallable = httpsCallable(functions, 'createPolicy'); // Deklarasi fungsi yang akan dipanggil
 
-
-const PolicyVotingFeature = () => {
+const CreatePolicy = () => {
     const navigate = useNavigate();
-    const { userData } = useAuth(); 
-    const isAdmin = userData?.role === 'admin'; 
-    
-    // Gunakan hook untuk logika bisnis
-    const { createNewPolicy, loading, error, success, resetStatus } = useCreatePolicy(); 
-
     const [policyData, setPolicyData] = useState({
         title: '',
         description: '',
-        category: 'kebijakan', 
+        category: 'kebijakan',
         deadline: '',
     });
     const [thumbnailFile, setThumbnailFile] = useState(null);
     const [documentFile, setDocumentFile] = useState(null);
-    
-    // Efek untuk menghilangkan notifikasi error/success
-    useEffect(() => {
-        if (error || success) {
-            const timer = setTimeout(() => {
-                resetStatus();
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [error, success, resetStatus]);
-
-
-    // Pemeriksaan Otorisasi di sisi Frontend
-    if (!userData || !isAdmin) { 
-        return (
-                <div className="flex justify-center items-center h-screen -mt-20">
-                    <div className="text-center p-8 bg-white rounded-xl shadow-lg">
-                        <h1 className="text-2xl font-bold text-red-600 mb-2">Akses Ditolak</h1>
-                        <p className="text-gray-600">Halaman ini hanya dapat diakses oleh Admin Pemerintah.</p>
-                    </div>
-                </div>
-        );
-    }
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0); // Tambahkan state progress
 
     const handleChange = (e) => {
         setPolicyData({ ...policyData, [e.target.name]: e.target.value });
@@ -59,47 +35,88 @@ const PolicyVotingFeature = () => {
         }
     };
 
+    // Fungsi utilitas untuk mengunggah file ke Firebase Storage
+    const uploadFile = async (file, path) => {
+        if (!file) return null;
+
+        const storageRef = ref(storage, `${path}/${file.name}_${Date.now()}`);
+        
+        // Asumsi uploadBytes sudah cukup, untuk progress bar lebih kompleks butuh uploadBytesResumable
+        await uploadBytes(storageRef, file); 
+        
+        return await getDownloadURL(storageRef);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+
         if (!policyData.title || !policyData.description || !policyData.deadline || !thumbnailFile) {
-            alert("Harap lengkapi semua data wajib (Judul, Deskripsi, Batas Waktu, dan Thumbnail).");
+            setError("Harap lengkapi Judul, Deskripsi, Batas Waktu, dan Thumbnail.");
+            setLoading(false);
             return;
         }
 
-        // Panggil logika bisnis dari hook
-        const policyId = await createNewPolicy(policyData, thumbnailFile, documentFile);
-        
-        if (policyId) {
-             // Reset form setelah berhasil
-             setPolicyData({ title: '', description: '', category: 'kebijakan', deadline: '' });
-             setThumbnailFile(null);
-             setDocumentFile(null);
-             // Navigasi setelah berhasil
-             setTimeout(() => navigate('/vote'), 2000); 
+        try {
+            // 1. Upload Thumbnail ke Storage
+            setSuccess("Mengunggah file thumbnail...");
+            const thumbnailUrl = await uploadFile(thumbnailFile, 'policy_thumbnails');
+            
+            // 2. Upload Dokumen Asli (jika ada) ke Storage
+            let documentUrl = null;
+            if (documentFile) {
+                setSuccess("Mengunggah dokumen asli...");
+                documentUrl = await uploadFile(documentFile, 'policy_documents');
+            }
+            
+            // 3. Panggil Cloud Function untuk memproses dan menyimpan data
+            setSuccess("Memproses data kebijakan di server...");
+            const dataToSend = {
+                ...policyData,
+                deadline: policyData.deadline, // Kirim sebagai string
+                thumbnailUrl,
+                documentUrl,
+            };
+
+            const result = await createPolicyCallable(dataToSend);
+            
+            if (result.data.status === 'success') {
+                 setSuccess("Kebijakan berhasil dibuat dan dipublikasikan!");
+                 setTimeout(() => navigate('/vote'), 2000); 
+            } else {
+                // Tangani error dari Cloud Function (misal, moderasi AI gagal)
+                 setError(result.data.message || "Gagal membuat kebijakan karena masalah server.");
+            }
+
+        } catch (err) {
+            console.error("Error creating policy (via function):", err);
+            setError(`Gagal membuat kebijakan. Error: ${err.message}`);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
+        <MainLayout>
             <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg mt-5">
-                <h1 className="text-3xl font-bold text-primary mb-8 border-b pb-4 flex items-center">
-                    <PlusCircle size={28} className="mr-3" />
+                <h1 className="text-3xl font-bold text-gray-800 mb-8 border-b pb-4">
                     Buat Vote Kebijakan Baru
                 </h1>
 
-                {/* Notifikasi Status */}
                 {error && <p className="p-3 mb-4 text-center text-red-800 bg-red-100 rounded-lg">{error}</p>}
                 {success && <p className="p-3 mb-4 text-center text-green-800 bg-green-100 rounded-lg">{success}</p>}
 
-
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    
-                    {/* Baris Kontrol Atas (Kategori/Tipe, Batas Waktu) */}
+                    {/* ... (Field input lainnya sama) ... */}
+
+                    {/* Baris Kontrol Atas (Kategori, Batas Waktu) */}
                     <div className="flex flex-col md:flex-row gap-6">
                         
                         {/* Kategori (Dropdown) */}
                         <div className="flex-1 relative">
-                            <label htmlFor="category" className={LabelStyle}>Tipe Konten</label>
+                            <label htmlFor="category" className="text-sm font-medium text-gray-700 block mb-1">Kategori</label>
                             <div className="relative">
                                 <select
                                     id="category"
@@ -107,7 +124,7 @@ const PolicyVotingFeature = () => {
                                     value={policyData.category}
                                     onChange={handleChange}
                                     required
-                                    className={`${InputStyle} pr-10 appearance-none`}
+                                    className="w-full border border-gray-300 rounded-full py-2.5 px-4 pr-10 bg-gray-100 text-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary"
                                 >
                                     <option value="kebijakan">Kebijakan Pemerintah</option>
                                     <option value="program">Program Pemerintah</option>
@@ -118,7 +135,7 @@ const PolicyVotingFeature = () => {
 
                         {/* Batas Waktu Vote (Date Input) */}
                         <div className="flex-1 relative">
-                            <label htmlFor="deadline" className={LabelStyle}>Batas Waktu Vote</label>
+                            <label htmlFor="deadline" className="text-sm font-medium text-gray-700 block mb-1">Batas Waktu Vote</label>
                             <input
                                 id="deadline"
                                 name="deadline"
@@ -126,30 +143,25 @@ const PolicyVotingFeature = () => {
                                 value={policyData.deadline}
                                 onChange={handleChange}
                                 required
-                                className={InputStyle}
+                                className="w-full border border-gray-300 rounded-full py-2.5 px-4 bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                             <Calendar className="absolute right-3 bottom-2 h-5 w-5 text-gray-400 pointer-events-none" />
                         </div>
                     </div>
 
                     {/* Judul Vote */}
-                    <div>
-                        <label htmlFor="title" className={LabelStyle}>Judul Vote</label>
-                        <input 
-                            id="title" 
-                            name="title" 
-                            type="text" 
-                            value={policyData.title}
-                            onChange={handleChange}
-                            required
-                            placeholder="Contoh: Kenaikan Gaji DPR"
-                            className={InputStyle}
-                        />
-                    </div>
+                    <FloatingLabelInput 
+                        id="title" 
+                        name="title" 
+                        label="Judul Vote (Contoh: Kenaikan Gaji DPR)" 
+                        type="text" 
+                        value={policyData.title}
+                        onChange={handleChange}
+                    />
                     
                     {/* Deskripsi Vote */}
                     <div>
-                        <label htmlFor="description" className={LabelStyle}>Deskripsi Vote</label>
+                        <label htmlFor="description" className="text-sm font-medium text-gray-700">Deskripsi Vote</label>
                         <textarea
                             id="description"
                             name="description"
@@ -164,7 +176,7 @@ const PolicyVotingFeature = () => {
 
                     {/* Upload Thumbnail (File Input) */}
                     <div>
-                        <label className={LabelStyle}>Upload Thumbnail (Gambar Wajib)</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Upload Thumbnail (Gambar)</label>
                         <div className="flex items-center space-x-4">
                             <input 
                                 type="file" 
@@ -172,11 +184,10 @@ const PolicyVotingFeature = () => {
                                 accept="image/*"
                                 onChange={(e) => handleFileChange(e, setThumbnailFile)}
                                 className="hidden" 
-                                required 
                             />
                             <label 
                                 htmlFor="thumbnail-upload" 
-                                className={FileButton}
+                                className="flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 rounded-full py-2 px-4 cursor-pointer hover:bg-gray-200 transition-colors"
                             >
                                 <UploadCloud size={20} className="mr-2" />
                                 Pilih File Thumbnail
@@ -189,7 +200,7 @@ const PolicyVotingFeature = () => {
 
                     {/* Upload Dokumen Asli (File Input) */}
                     <div>
-                        <label className={LabelStyle}>Upload Dokumen Asli (PDF/DOC, Opsional)</label>
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Upload Dokumen Asli (PDF/DOC, Opsional)</label>
                         <div className="flex items-center space-x-4">
                             <input 
                                 type="file" 
@@ -200,7 +211,7 @@ const PolicyVotingFeature = () => {
                             />
                             <label 
                                 htmlFor="document-upload" 
-                                className={FileButton}
+                                className="flex items-center justify-center bg-gray-100 text-gray-700 border border-gray-300 rounded-full py-2 px-4 cursor-pointer hover:bg-gray-200 transition-colors"
                             >
                                 <UploadCloud size={20} className="mr-2" />
                                 Pilih File Dokumen
@@ -216,16 +227,15 @@ const PolicyVotingFeature = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 font-bold bg-primary text-white rounded-full hover:bg-red-800 transition-colors disabled:bg-gray-400 flex items-center justify-center"
+                        className="w-full py-3 font-bold bg-primary text-white rounded-full hover:bg-primary-dark transition-colors disabled:bg-gray-400"
                     >
-                        {loading ? (
-                            <Loader2 size={20} className="mr-2 animate-spin" />
-                        ) : 'Buat & Publikasikan Vote'}
+                        {loading ? 'Membuat Kebijakan...' : 'Buat & Publikasikan Vote'}
                     </button>
 
                 </form>
             </div>
+        </MainLayout>
     );
 };
 
-export default PolicyVotingFeature;
+export default CreatePolicy;
