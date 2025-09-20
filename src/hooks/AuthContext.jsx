@@ -25,6 +25,11 @@ export const AuthProvider = ({ children }) => {
 
       if (docSnap.exists()) {
         setUserData(docSnap.data());
+        
+        // [FIX BARU 2] Paksa refresh token ID untuk mengambil custom claim (role)
+        // yang telah diatur oleh Cloud Function.
+        await user.getIdToken(true); 
+        
       } else {
         console.warn("User document not found in Firestore.");
         setUserData({ role: 'guest' });  

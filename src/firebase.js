@@ -26,7 +26,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
-const functions = getFunctions(app);
+const functions = getFunctions(app, 'asia-southeast2'); 
 console.log("firebaseConfig.js: Menggunakan konfigurasi dari .env.");
 
 export {
