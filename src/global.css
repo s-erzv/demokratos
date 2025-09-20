@@ -8,12 +8,13 @@
   --font-family: 'Inter', sans-serif;
 }
 
-:root {
-  --primary-color: #8A1717;
+:root { 
+  --color-primary: 0 76% 32%;      
+  --color-secondary: 0 50% 56%;    
+   
   --primary-dark: #6C1212; 
   --primary-light: #A42525;
 
-  --secondary-color: #C55B5B;
   --secondary-dark: #A54B4B; 
   --secondary-light: #E07B7B;
 
@@ -29,22 +30,21 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
+} 
 .text-primary {
-  color: var(--primary-color);
+  color: hsl(var(--color-primary)); 
 }
 
 .text-secondary {
-  color: var(--secondary-color);
+  color: hsl(var(--color-secondary));
 }
 
 .bg-primary {
-  background-color: var(--primary-color);
+  background-color: hsl(var(--color-primary));
 }
 
 .bg-secondary {
-  background-color: var(--secondary-color);
+  background-color: hsl(var(--color-secondary));
 }
 
 .button {
@@ -61,7 +61,7 @@ body {
 }
 
 .button.primary {
-  background-color: var(--primary-color);
+  background-color: hsl(var(--color-primary));
   color: var(--light-text-color);
 }
 
@@ -70,7 +70,7 @@ body {
 }
 
 .button.secondary {
-  background-color: var(--secondary-color);
+  background-color: hsl(var(--color-secondary));
   color: var(--light-text-color);
 }
 
