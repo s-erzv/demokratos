@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
-import { db } from '../../../firebase'; // Sesuaikan path
-import { useAuth } from '../../../contexts/AuthContext'; // Sesuaikan path
+import { db } from '../../firebase';
+import { useAuth } from '../../hooks/AuthContext';
 
 const CreateCommentForm = ({ postId, onCommentAdded }) => {
   const { currentUser, userData } = useAuth();

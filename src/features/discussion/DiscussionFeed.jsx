@@ -1,7 +1,8 @@
 // src/components/features/discussion/DiscussionFeed.jsx
 
-import { useState, useEffect } from 'react';
-// ... semua import lain ...
+import { useState, useEffect, useCallback } from 'react';
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { db } from '../../firebase';
 import PostCard from './PostCard';
 import CreatePostModal from './CreatePostModal';
 
@@ -12,45 +13,39 @@ const DiscussionFeed = () => {
   const [searchTerm, setSearchTerm] = useState(''); // State untuk search
   const [filter, setFilter] = useState('terbaru');     // State untuk filter
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      const postsCollection = collection(db, 'posts');
-      
-      let q; // Deklarasikan variabel query
-      
-      if (searchTerm.trim() !== '') {
-        // Jika ada input di search bar, lakukan query pencarian
-        // Ubah input search menjadi huruf kecil agar cocok dengan keywords
-        q = query(postsCollection, where('keywords', 'array-contains', searchTerm.toLowerCase()));
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    const postsCollection = collection(db, 'posts');
+    let q;
 
+    if (searchTerm.trim() !== '') {
+      q = query(postsCollection, where('keywords', 'array-contains', searchTerm.toLowerCase()));
+    } else {
+      if (filter === 'populer') {
+        q = query(postsCollection, orderBy('commentCount', 'desc'));
       } else {
-        // Jika search bar kosong, gunakan logika filter
-        if (filter === 'populer') {
-          q = query(postsCollection, orderBy('commentCount', 'desc'));
-        } else {
-          // Default: urutkan berdasarkan yang terbaru
-          q = query(postsCollection, orderBy('createdAt', 'desc'));
-        }
+        q = query(postsCollection, orderBy('createdAt', 'desc'));
       }
+    }
 
-      try {
-        const querySnapshot = await getDocs(q);
-        const postsData = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        setPosts(postsData);
-      } catch (error) {
-          console.error("Error fetching posts:", error);
-          // Tampilkan pesan error jika perlu
-      } finally {
-          setLoading(false);
-      }
-    };
+    try {
+      const querySnapshot = await getDocs(q);
+      const postsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+      }));
+      setPosts(postsData);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm, filter]); // <-- Dependensi untuk useCallback
 
+  // useEffect sekarang hanya bertugas memanggil fetchPosts
+  useEffect(() => {
     fetchPosts();
-  }, [searchTerm, filter]); // <-- Akan fetch ulang jika search/filter berubah
+  }, [fetchPosts]); // <-- Akan fetch ulang jika search/filter berubah
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -78,22 +73,29 @@ const DiscussionFeed = () => {
           </div>
       </div>
 
+      <div className='bg-white rounded-lg shadow-sm border mb-4'>
+        
       {/* Daftar Post */}
       {loading ? (
         <p>Memuat diskusi...</p>
       ) : (
-        posts.map(post => <PostCard key={post.id} post={post} />)
+        posts.map(post => <PostCard key={post.id} post={post} onUpdate={fetchPosts} />)
       )}
 
       {/* Tombol & Modal */}
-      <button onClick={() => setIsModalOpen(true)} className="...">
+      <button 
+        onClick={() => setIsModalOpen(true)} 
+        className="fixed bottom-8 right-8 bg-red-800 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-lg hover:bg-red-700"
+      >
         +
       </button>
+      
       <CreatePostModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         onPostCreated={fetchPosts}
       />
+      </div>
     </div>
   );
 };

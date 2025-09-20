@@ -9,9 +9,10 @@ import PolicyVoting from './pages/PolicyVoting.jsx';
 import SignIn from './components/signin/signin.jsx';
 import SignUp from './components/signup/SignUp.jsx';
 import Profile from './pages/Profile.jsx'; 
+import Discussion from './pages/Discussion.jsx';
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
-
+import ThreadPage from './pages/ThreadPage.jsx';
 
 
 createRoot(document.getElementById('root')).render(
@@ -47,6 +48,24 @@ createRoot(document.getElementById('root')).render(
             element={
               <ProtectedRoute>
                 <Profile /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/diskusi" 
+            element={
+              <ProtectedRoute>
+                <Discussion /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/diskusi/:postId" 
+            element={
+              <ProtectedRoute>
+                <ThreadPage /> 
               </ProtectedRoute>
             } 
           />

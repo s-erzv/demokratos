@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from '../firebase';
-import { useAuth } from '../contexts/AuthContext'; // Sesuaikan path jika perlu
+import { db } from '../../firebase';
+import { useAuth } from '../../hooks/AuthContext';
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
   const { currentUser, userData } = useAuth(); // Gunakan AuthContext!
@@ -114,6 +114,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
           <button type="submit" disabled={loading} className="w-full bg-red-800 text-white p-3 rounded-md font-bold">
             {loading ? 'Mengirim...' : 'Buat Diskusi'}
           </button>
+          
           <button type="button" onClick={onClose} className="w-full mt-2 text-gray-600 p-2">
             Batal
           </button>

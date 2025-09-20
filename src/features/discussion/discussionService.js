@@ -1,7 +1,7 @@
 // src/components/features/discussion/discussionService.js
 
-import { doc, runTransaction, collection, getDoc } from "firebase/firestore";
-import { db } from '../../../firebase'; // Sesuaikan path
+import { doc, runTransaction, collection, getDoc, increment } from "firebase/firestore";
+import { db } from "../../firebase"
 
 /**
  * Mengelola logika like/unlike untuk sebuah post.
@@ -21,11 +21,11 @@ export const toggleLikePost = async (postId, userId) => {
       if (likeDoc.exists()) {
         // Jika sudah ada (unlike)
         transaction.delete(likeRef);
-        transaction.update(postRef, { likeCount: -1 }); // Gunakan increment(-1) jika bisa
+        transaction.update(postRef, { likeCount: increment(-1) }); // Gunakan increment(-1) jika bisa
       } else {
         // Jika belum ada (like)
         transaction.set(likeRef, { likedAt: new Date() });
-        transaction.update(postRef, { likeCount: 1 }); // Gunakan increment(1) jika bisa
+        transaction.update(postRef, { likeCount: increment(1) }); // Gunakan increment(1) jika bisa
       }
     });
     console.log("Like/Unlike transaction successful");
@@ -36,8 +36,8 @@ export const toggleLikePost = async (postId, userId) => {
   }
 };
 
-export const reportPost = async (postId, userId) => {
-    if (!postId || !userId) return;
+export const reportPost = async (postId, userId, reason) => {
+    if (!postId || !userId) return false;
   
     const reportRef = doc(db, 'posts', postId, 'reports', userId);
     const reportDoc = await getDoc(reportRef);
@@ -52,17 +52,13 @@ export const reportPost = async (postId, userId) => {
       await setDoc(reportRef, {
         reportedAt: new Date(),
         // Di aplikasi nyata, kamu akan membuka modal untuk menanyakan alasan
-        reason: "N/A"
+        reason: reason
       });
       
-      // Opsional: Kamu bisa menambahkan field 'reportCount' di post
-      // dan meng-increment-nya di sini jika perlu.
-      
-      alert("Terima kasih atas laporan Anda. Tim kami akan meninjaunya.");
+      console.log("Post reported successfully.");
       return true;
     } catch (error) {
       console.error("Failed to report post: ", error);
-      alert("Gagal mengirim laporan.");
       return false;
     }
 };

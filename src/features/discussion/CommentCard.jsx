@@ -1,10 +1,4 @@
 import { formatTimeAgo } from "../../utils/formatters";
-const formatTimeAgo = (timestamp) => {
-    // Implementasi logika format waktu, misal menggunakan library 'date-fns'
-    if (!timestamp) return 'beberapa saat lalu';
-    // ... logika konversi ...
-    return "2 jam lalu"; // Placeholder
-};
 
 const CommentCard = ({ comment }) => {
   return (
