@@ -13,6 +13,7 @@ export default function LaporModel(){
     const [file, setFile] = useState("")
     const [judul, setJudul] = useState("")
     const [deskripsi, setDeskripsi] = useState("")
+    const [alamat, setAlamat] = useState("")
 
     const user = auth.currentUser
 
@@ -34,7 +35,8 @@ export default function LaporModel(){
                     judul: judul,
                     deskripsi: deskripsi,
                     kategori: kategori,
-                    fileURL: photoURL
+                    fileURL: photoURL,
+                    alamat: alamat
                 })
 
                 console.log("Laporan berhasil dibuat")
@@ -53,6 +55,7 @@ export default function LaporModel(){
         setFile("")
         setJudul("")
         setDeskripsi("")
+        setAlamat("")
     }
 
     if (!show) return null
@@ -60,7 +63,7 @@ export default function LaporModel(){
     return(
         <div  className="h-screen w-full z-40 fixed inset-0">
             <div onClick={() => {setShow(false), resetForm()}} className="h-full w-full absolute bg-black opacity-50 z-10 backdrop-blur-sm"></div>
-            <div className="h-full w-full flex items-center justify-center px-80 py-20">
+            <div className="h-full w-full flex items-center justify-center px-80 py-10">
                 <div className="h-full w-full bg-white rounded-2xl flex flex-col items-center justify-evenly p-10 z-20">
                     <div className="w-full flex flex-col gap-1 items-center">
                         <h1 className="text-3xl font-bold">Buat Laporan</h1>
@@ -93,6 +96,7 @@ export default function LaporModel(){
                     </div>
                     <LaporInput title={"Judul laporan"} placeholder={"Contoh: “Jalan berlubang di Jl. Sudirman”"} value={judul} onchange={(e) => setJudul(e.target.value)}/>
                     <LaporInput title={"Deskripsi Masalah"} placeholder={"Ceritakan detail masalah yang Anda temui…"} value={deskripsi} onchange={(e) => setDeskripsi(e.target.value)}/>
+                    <LaporInput title={"Lokasi Masalah"} placeholder={"Tuliskan alamat lengkap lokasi masalah"} value={alamat} onchange={(e) => setAlamat(e.target.value)}/>
                     <button onClick={() => handleSubmit()} className="w-full bg-primary rounded-full text-white p-2">Kirim Laporan</button>
                 </div>
             </div>
