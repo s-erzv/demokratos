@@ -74,10 +74,10 @@ const PolicyVotingFeature = () => {
     };
 
     return (
-            <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg mt-5">
+            <div className="mx-auto bg-white p-8 rounded-xl shadow-lg mt-5">
                 <h1 className="text-3xl font-bold text-primary mb-8 border-b pb-4 flex items-center">
                     <PlusCircle size={28} className="mr-3" />
-                    Buat Vote Kebijakan Baru
+                    Buat Vote
                 </h1>
  
                 <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800">
@@ -125,7 +125,6 @@ const PolicyVotingFeature = () => {
                                 required
                                 className={InputStyle}
                             />
-                            <Calendar className="absolute right-3 bottom-2 h-5 w-5 text-gray-400 pointer-events-none" />
                         </div>
                     </div>
  

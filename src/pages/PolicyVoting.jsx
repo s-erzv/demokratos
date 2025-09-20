@@ -6,6 +6,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { PlusCircle, Search, SlidersHorizontal, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Card from '../components/Card'; 
+import { usePolicyActions } from '../hooks/usePolicyActions'; // Import hook baru
 
 const PolicyVoting = () => {
   const { userData } = useAuth();
@@ -14,7 +15,7 @@ const PolicyVoting = () => {
   const [policies, setPolicies] = useState([]); 
   const [loading, setLoading] = useState(true); 
   const [searchTerm, setSearchTerm] = useState(''); 
- 
+
   const fetchPolicies = useCallback(async () => {
     try {
       setLoading(true);
@@ -47,6 +48,9 @@ const PolicyVoting = () => {
       setLoading(false);
     }
   }, []); 
+
+  // Panggil hook untuk aksi Admin, passing fetchPolicies sebagai callback onSuccess
+  const { deletePolicy, loadingDelete, errorDelete } = usePolicyActions(fetchPolicies);
  
   useEffect(() => {
     fetchPolicies();
@@ -82,19 +86,24 @@ const PolicyVoting = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {filteredPolicies.map(policy => (
-            <Card key={policy.id} {...policy} /> 
+            <Card 
+                key={policy.id} 
+                {...policy}
+                isAdmin={isAdmin} // Pass role status
+                onDelete={deletePolicy} // Pass delete action
+            /> 
           ))}
         </div>
       </section>
     );
   };
    
-  if (loading) {
+  if (loading || loadingDelete) { // Tambahkan loadingDelete agar tidak ada aksi saat menghapus
       return (
           <MainLayout>
               <div className="flex justify-center items-center h-[50vh]">
                   <Loader2 size={32} className="animate-spin text-primary" />
-                  <p className="ml-3 text-lg text-gray-600">Memuat kebijakan...</p>
+                  <p className="ml-3 text-lg text-gray-600">{loadingDelete ? 'Menghapus kebijakan...' : 'Memuat kebijakan...'}</p>
               </div>
           </MainLayout>
       );
@@ -103,6 +112,10 @@ const PolicyVoting = () => {
   return (
     <MainLayout>
       <div className="space-y-12">
+        
+        {errorDelete && (
+             <div className="p-3 mb-4 text-center text-red-800 bg-red-100 rounded-lg">{errorDelete}</div>
+        )}
          
         <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-14 relative overflow-hidden">
           <div className="absolute top-0 right-0 h-full w-[60%] z-0">
@@ -140,7 +153,7 @@ const PolicyVoting = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button className="bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center hover:bg-red-800 transition-colors">
+              <button className="bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center hover:bg-red-800 transition-colors" disabled={loadingDelete}>
                 <SlidersHorizontal size={20} className="mr-2" />
                 Filter
               </button>
