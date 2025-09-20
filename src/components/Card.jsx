@@ -12,7 +12,7 @@ const Card = ({ title, description, category, imageUrl, votes, date }) => {
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <span className="inline-block bg-primary text-white text-xs font-semibold px-2 py-0.5 rounded-full uppercase">
+          <span className="inline-block border border-[#E53935] bg-[#E53935]/80 text-black text-xs font-light px-2 py-0.5 rounded-full">
             {category}
           </span>
           <span className="text-xs text-gray-500">
@@ -32,7 +32,7 @@ const Card = ({ title, description, category, imageUrl, votes, date }) => {
             <span className="font-medium">{votes}</span>
             <span className="ml-1 text-xs">sudah berpartisipasi</span>
           </div>
-          <button className="text-xs font-semibold px-3 py-1 bg-primary text-white rounded hover:bg-red-800 transition-colors">
+          <button className="text-xs font-medium px-4 py-2 bg-primary text-white rounded-full hover:bg-red-800 transition-colors">
             Lihat Detail & Vote
           </button>
         </div>
