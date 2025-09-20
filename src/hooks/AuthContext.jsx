@@ -26,8 +26,6 @@ export const AuthProvider = ({ children }) => {
       if (docSnap.exists()) {
         setUserData(docSnap.data());
         
-        // [FIX BARU 2] Paksa refresh token ID untuk mengambil custom claim (role)
-        // yang telah diatur oleh Cloud Function.
         await user.getIdToken(true); 
         
       } else {
@@ -39,11 +37,15 @@ export const AuthProvider = ({ children }) => {
       setUserData(null);
     }
   };
+    
+  const refreshUserData = () => fetchUserData(currentUser);
 
   useEffect(() => { 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
-      await fetchUserData(user); 
+      if (user) {
+          await fetchUserData(user); 
+      }
       setLoading(false);  
     });
  
@@ -61,7 +63,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     isAdmin: userData?.role === 'admin',
     isUser: userData?.role === 'user', 
-    refreshUserData: () => fetchUserData(currentUser),
+    refreshUserData,
   };
 
   return (
