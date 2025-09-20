@@ -1,9 +1,12 @@
 import { ChevronDown, Search } from "lucide-react";
+import { useLapor } from "../hooks/useLapor";
 
 export default function Header(){
+    const { setShow } = useLapor()
+
     return(
         <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 h-full w-[60%] z-0">
+            <div className="absolute top-0 right-0 h-full w-[50%] z-0">
                 <div 
                     className="w-full h-full bg-center bg-cover bg-no-repeat bg-[url('/lapor/indonesiaMap.svg')]" 
                 >          
@@ -14,7 +17,7 @@ export default function Header(){
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
                     Sampaikan Laporan Anda
                 </h1>
-                <p className="text-lg text-gray-600 mt-2">
+                <p className="text-lg text-gray-600 mt-2 pr-5">
                     Setiap laporan akan ditindaklanjuti demi layanan publik yang lebih baik.
                 </p>
 
@@ -31,7 +34,7 @@ export default function Header(){
                         Filter
                         <ChevronDown />
                     </button>
-                    <button className="bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
+                    <button onClick={() => setShow(true)} className="bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
                         Lapor
                     </button>
                 </div>
