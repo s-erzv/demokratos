@@ -14,7 +14,7 @@ export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori,
                 </div>
                 <div className="flex flex-col">
                     <h2 className="text-2xl font-semibold">{judul}</h2>
-                    <p className="text-gray-400">{deskripsi}</p>
+                    <p className="text-gray-400 truncate">{deskripsi}</p>
                 </div>
                 <div className="flex flex-row text-primary gap-2 text-sm">
                     <MapPin />

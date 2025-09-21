@@ -1,27 +1,8 @@
-import { collection, getDocs } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { db } from "../../../../firebase";
 import LaporCard from "../laporCard";
+import { useLapor } from "../../hooks/useLapor";
 
 export default function LaporList({kategori}){
-    const [data, setData] = useState([])
-    
-    useEffect(() => {
-        fetchLaporan()
-    },[])
-
-    async function fetchLaporan() {
-        try {
-            const querySnapshot = await getDocs(collection(db, "laporan"));
-            const laporans = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            setData(laporans)
-        } catch (error) {
-            console.error(error)
-        }
-    }
+    const { data } = useLapor()
 
     return(
         <>
