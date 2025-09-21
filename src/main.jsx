@@ -17,6 +17,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Landing from './pages/Landing';
 import LaporPage from './pages/LaporPage.jsx';
 import AdminRoute from './components/AdminRoute.jsx';  
+import LaporDetailPage from './pages/LaporDetailPage.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')).render(
         <Routes>
           {/* sementara aja */}
           <Route path='/laporan' element={<LaporPage/>}/>
+          <Route path='/laporan/:laporanId' element={<LaporDetailPage/>}/>
 
           {/* Rute Publik: Sign In dan Sign Up */}
           <Route path='/welcome' element={<Landing/>}/>

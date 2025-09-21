@@ -2,7 +2,7 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import LaporInput from "./subComponent/LaporInput";
 import { auth, db, storage } from "../../../firebase";
 import { useState } from "react";
-import { addDoc, collection, doc } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import { useLapor } from "../hooks/useLapor";
 
 export default function LaporModel(){
@@ -31,13 +31,20 @@ export default function LaporModel(){
 
                 const photoURL = await getDownloadURL(imageRef)
 
-                await addDoc(collection(db, "laporan"), {
+                const docRef = await addDoc(collection(db, "laporan"), {
                     judul: judul,
                     deskripsi: deskripsi,
                     kategori: kategori,
                     fileURL: photoURL,
-                    alamat: alamat
+                    alamat: alamat,
+                    status: "Baru diajukan",
+                    pendukung: 0,
+                    authorId: user.uid
                 })
+
+                await updateDoc(docRef, {
+                    docId: docRef.id
+                });
 
                 console.log("Laporan berhasil dibuat")
                 setShow(false)
@@ -73,6 +80,7 @@ export default function LaporModel(){
                         <div className="flex flex-row items-center justify-center gap-3">
                             Kategori
                             <select className="bg-gray-300 rounded-2xl p-3" onChange={(e) => setKategori(e.target.value)}>
+                                <option value={""} disabled selected>Pilih</option>
                                 <option value={"Infrastruktur"}>Infrastruktur</option>
                                 <option value={"Kesehatan"}>Kesehatan</option>
                                 <option value={"Pendidikan"}>Pendidikan</option>

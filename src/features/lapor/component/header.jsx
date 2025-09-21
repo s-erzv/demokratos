@@ -5,7 +5,7 @@ export default function Header(){
     const { setShow } = useLapor()
 
     return(
-        <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative overflow-hidden">
+        <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative overflow-hidden mb-10">
             <div className="absolute top-0 right-0 h-full w-[50%] z-0">
                 <div 
                     className="w-full h-full bg-center bg-cover bg-no-repeat bg-[url('/lapor/indonesiaMap.svg')]" 
