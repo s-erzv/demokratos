@@ -15,6 +15,7 @@ import Profile from './pages/Profile.jsx';
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
 import AdminRoute from './components/AdminRoute.jsx';  
+import AllPoliciesPage from './pages/AllPoliciesPage';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -48,6 +49,14 @@ createRoot(document.getElementById('root')).render(
                 <PolicyDetail /> 
               </ProtectedRoute>
             } 
+          />
+          <Route
+            path='/policies/all'
+            element={
+              <ProtectedRoute>
+                <AllPoliciesPage />
+              </ProtectedRoute>
+            }
           />
           
           <Route 
