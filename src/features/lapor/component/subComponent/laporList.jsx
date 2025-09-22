@@ -6,7 +6,7 @@ import { useAuth } from "../../../../hooks/AuthContext";
 import { useLapor } from "../../hooks/useLapor";
 
 export default function LaporList({kategori}){
-    const { isAdmin, search } = useLapor()
+    const { isAdmin, search, filter } = useLapor()
     const { userData } = useAuth()
 
     const [data, setData] = useState([])
@@ -49,13 +49,19 @@ export default function LaporList({kategori}){
         let result = data
 
         if (search) {
-            result = data.filter(laporan => 
+            result = result.filter(laporan => 
                 laporan.judul.toLowerCase().includes(search.toLowerCase())
             );
         }
-
+        
+        if (filter) {
+            result = result.filter(laporan =>
+                laporan.kategori === filter
+            );
+        }
+     
         setFilteredData(result);
-    }, [search, data]);
+    }, [search, data, filter]);
 
     return(
         <>
