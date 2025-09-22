@@ -16,12 +16,24 @@ import { AuthProvider } from './hooks/AuthContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
 import AdminRoute from './components/AdminRoute.jsx';  
 import AllPoliciesPage from './pages/AllPoliciesPage';
+import Landing from './pages/Landing';
+
+// Hapus kode yang dikomen di bawah ini jika tidak digunakan
+// const router = createBrowserRouter ([
+//   {path: "/signin", element:
+//     <AuthRoute>
+//       <SignIn />
+//     </AuthRoute>
+//   },
+// ])
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <Routes> 
+        <Routes>
+          {/* Rute Publik: Sign In dan Sign Up */}
+          <Route path='/welcome' element={<Landing/>}/>
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
  
