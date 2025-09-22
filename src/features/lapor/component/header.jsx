@@ -4,7 +4,7 @@ import FilterList from "./subComponent/filterList";
 import { useState } from "react";
 
 export default function Header(){
-    const { setShow, isAdmin, setSearch, search } = useLapor()
+    const { setShow, isAdmin, setSearch, search} = useLapor()
 
     const [showFilter, setShowFilter] = useState(false)
 

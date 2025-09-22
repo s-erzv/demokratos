@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { db } from "../../../../firebase";
 import { useAuth } from "../../../../hooks/AuthContext";
 import { useLapor } from "../../hooks/useLapor";
+import { useNavigate } from "react-router-dom";
 
 export default function LaporList({kategori}){
+    const navigate = useNavigate()
+
     const { isAdmin, search, filter } = useLapor()
     const { userData } = useAuth()
 
@@ -20,10 +23,10 @@ export default function LaporList({kategori}){
             let q = query(laporanRef);
 
             if (kategori === 'Terpopuler') {
-                q = query(q, orderBy("pendukung", "desc")); // 'desc' = descending (terbanyak ke terkecil)
+                q = query(q, orderBy("pendukung", "desc"));
             }
             if (kategori === 'Terbaru') {
-                q = query(q, orderBy("createdAt", "desc")); // 'desc' = descending (terbaru ke terlama)
+                q = query(q, orderBy("createdAt", "desc"));
             }
             if (kategori === 'Laporan Anda') {
                 q = query(laporanRef, where("authorId", "==", userData.uid));
@@ -53,7 +56,7 @@ export default function LaporList({kategori}){
                 laporan.judul.toLowerCase().includes(search.toLowerCase())
             );
         }
-        
+
         if (filter) {
             result = result.filter(laporan =>
                 laporan.kategori === filter
@@ -64,10 +67,13 @@ export default function LaporList({kategori}){
     }, [search, data, filter]);
 
     return(
-        <>
-            <h1 className="p-5 text-3xl font-bold border-b-2">{kategori}</h1>
+        <>  
+            <div className="flex flex-row items-center justify-between">
+                <h1 className="p-5 text-3xl font-bold border-b-2">{kategori}</h1>
+                <button onClick={() => navigate("/laporan/all")} className={`bg-primary rounded-full p-1 px-3 text-white hover:bg-secondary duration-150`}>Lihat semua</button>
+            </div>
             <div className="flex flex-row overflow-x-auto w-full gap-5 h-3/5 p-2 mb-5">
-                {filteredData.map(laporan => (
+                {filteredData.slice(0, 9).map(laporan => (
                     <div key={laporan.id} className="flex-shrink-0">
                         <LaporCard imageURL={laporan.fileURL} judul={laporan.judul} deskripsi={laporan.deskripsi} alamat={laporan.alamat} kategori={laporan.kategori} status={laporan.status} pendukung={laporan.pendukung} id={laporan.docId}/>
                     </div>
