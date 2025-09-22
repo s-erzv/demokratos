@@ -81,8 +81,8 @@ createRoot(document.getElementById('root')).render(
               <ProtectedRoute>
                 <LaporLengkapPage/> 
               </ProtectedRoute>
-            } 
-          />
+       
+            }   />
           <Route
             path='/policies/all'
             element={
