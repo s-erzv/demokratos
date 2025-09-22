@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../hooks/AuthContext';
 import UserDashboard from './UserDashboard';  
-// import AdminDashboard from './AdminDashboard';  
+import AdminDashboard from './AdminDashboard';  
 import MainLayout from '../components/MainLayout';
 
 const AdminDashboardPlaceholder = () => (
@@ -29,7 +29,7 @@ const Dashboard = () => {
     }
      
     if (userData?.role === 'admin') {
-        // return <AdminDashboard />; // Ketika sudah dibuat
+        return <AdminDashboard />;
         return <AdminDashboardPlaceholder />; 
     }
  
