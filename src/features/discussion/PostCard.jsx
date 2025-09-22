@@ -98,7 +98,7 @@ const PostCard = ({ post, onUpdate }) => {
       
 
     return (
-      <div className="px-5 sm:px-14  ">
+      <div className="">
         
         {/* STRUKTUR DIUBAH: Kembali ke layout satu kolom untuk konten utama,
             dengan baris atas khusus untuk info penulis dan waktu. */}
