@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout from '../components/MainLayout';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
+import { db, functions } from '../firebase';
 import { doc, getDoc, collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
-import { Loader2, Users, Download, ThumbsUp, ThumbsDown, Send, ArrowLeft } from 'lucide-react';
+import { Loader2, Users, Download, ThumbsUp, ThumbsDown, Send, ArrowLeft, Bot } from 'lucide-react';
 import VotingModal from '../components/VotingModal';
 import { useVoting } from '../hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
@@ -11,38 +11,28 @@ import PolicyDiscussion from '../features/discussion/DiscussionForm';
 import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
 import DiscussionForm from '../features/discussion/DiscussionForm';
 
+
 const PolicyDetail = () => {
     const [isDiscussion, setIsDiscussion] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [posts, setPosts] = useState([]);
     const { policyId } = useParams();
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
+    const { currentUser, isAdmin, userData } = useAuth();
 
     const [policy, setPolicy] = useState(null);
     const [comments, setComments] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    // State baru untuk status voting pengguna
     const [hasVoted, setHasVoted] = useState(false);
     
-    // FUNGSI UNTUK REFRESH DATA (dipanggil setelah vote sukses)
-    const handleRefetch = useCallback(() => {
-        fetchPolicyData();
-        checkUserVoteStatus(policyId);
-    }, [policyId]);
-
-    const { 
-        isModalOpen, 
-        openModal, 
-        closeModal, 
-        submitVote, 
-        loadingVote, 
-        errorVote 
-    } = useVoting(handleRefetch);
+    // State untuk analisis sentimen
+    const [sentimentData, setSentimentData] = useState(null);
+    const [loadingSentiment, setLoadingSentiment] = useState(false);
+    const [errorSentiment, setErrorSentiment] = useState(null);
     
-    // Fungsi baru untuk memeriksa status voting
+    
+    // Fungsi untuk memeriksa status voting (Dependency paling dasar: currentUser)
     const checkUserVoteStatus = useCallback(async (id) => {
         if (!currentUser || !id) {
             setHasVoted(false);
@@ -50,7 +40,6 @@ const PolicyDetail = () => {
         }
 
         try {
-            // Gunakan konvensi nama dokumen yang sama dengan di server: {userId}_{policyId}
             const voteDocRef = doc(db, 'votes', `${currentUser.uid}_${id}`);
             const voteSnap = await getDoc(voteDocRef);
             setHasVoted(voteSnap.exists);
@@ -59,7 +48,7 @@ const PolicyDetail = () => {
             setHasVoted(false);
         }
     }, [currentUser]);
-    
+
     // Fungsi untuk mengambil data policy (detail)
     const fetchPolicyData = useCallback(async () => {
         if (!policyId) return;
@@ -84,7 +73,13 @@ const PolicyDetail = () => {
                     formattedDeadline,
                 });
                 
-                // Panggil cek status voting setelah data policy didapatkan
+                // Ambil data sentimen yang di-cache di dokumen policy
+                if (data.sentimentAnalysis) {
+                    setSentimentData(data.sentimentAnalysis);
+                } else {
+                    setSentimentData(null);
+                }
+                
                 if (currentUser) {
                     checkUserVoteStatus(docSnap.id);
                 }
@@ -100,34 +95,97 @@ const PolicyDetail = () => {
         }
     }, [policyId, currentUser, checkUserVoteStatus]);
 
+    
+    // FUNGSI UNTUK REFRESH DATA (dipanggil setelah vote sukses)
+    const handleRefetch = useCallback(() => {
+        fetchPolicyData();
+        checkUserVoteStatus(policyId);
+    }, [policyId, fetchPolicyData, checkUserVoteStatus]);
+
+    const { 
+        isModalOpen, 
+        openModal, 
+        closeModal, 
+        submitVote, 
+        loadingVote, 
+        errorVote 
+    } = useVoting(handleRefetch);
+    
+    // Fungsi untuk memicu analisis sentimen (HANYA ADMIN)
+    const triggerSentimentAnalysis = useCallback(async () => {
+        if (!currentUser) {
+            setErrorSentiment("Kesalahan otentikasi: Anda harus login."); 
+            return;
+        }
+        if (!isAdmin || !policyId) return;
+        
+        setLoadingSentiment(true);
+        setErrorSentiment(null);
+        setSentimentData(null); 
+
+        try {
+            const idToken = await currentUser.getIdToken(true); 
+
+            // FIX: Pastikan HEADERS dan BODY terformat JSON dengan benar.
+            const response = await fetch('https://us-central1-demokratos-5b0ce.cloudfunctions.net/analyzePolicySentiment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`, 
+                },
+                body: JSON.stringify({ 
+                    policyId: policyId 
+                }),
+            });
+            
+            const result = await response.json(); 
+
+            if (response.ok && result.status === 'success' && result.data) {
+                setSentimentData(result.data);
+                alert("Analisis sentimen berhasil diperbarui!");
+            } else if (response.ok && result.status === 'success' && !result.data) {
+                alert(result.message);
+            } else {
+                setErrorSentiment(result.message || `Gagal memicu analisis. Status: ${response.status}`);
+            }
+            
+            fetchPolicyData();
+
+        } catch (err) {
+            console.error("Error triggering sentiment analysis:", err);
+            if (err.code === 'unauthenticated') {
+                setErrorSentiment("Gagal: Sesi Anda mungkin berakhir. Silakan logout dan login ulang.");
+            } else {
+                setErrorSentiment(err.message || "Gagal memicu analisis. Cek log Cloud Function.");
+            }
+        } finally {
+            setLoadingSentiment(false);
+        }
+    }, [isAdmin, policyId, fetchPolicyData, currentUser]); 
+
     useEffect(() => {
         fetchPolicyData();
     }, [fetchPolicyData]);
     
-    // Placeholder untuk fetch comments
+    // Placeholder untuk fetchPosts tetap sama
     const fetchPosts = useCallback(async () => {
-        // Jangan fetch jika policyId belum ada
         if (!policyId) return;
 
-        setLoading(true);
         try {
             const postsCollection = collection(db, 'posts');
-            let q; // Deklarasikan variabel query
+            let q; 
 
-            // 1. Buat query dasar yang SELALU menyaring berdasarkan policyId
             const baseQuery = query(
                 postsCollection, 
                 where("sourceId", "==", policyId)
             );
 
-            // 2. Jika ada input di search bar, tambahkan saringan keywords
             if (searchTerm.trim() !== '') {
                 q = query(
                     baseQuery, 
                     where('keywords', 'array-contains', searchTerm.toLowerCase())
                 );
             } else {
-                // 3. Jika tidak ada input, cukup urutkan berdasarkan yang terbaru
                 q = query(baseQuery, orderBy('createdAt', 'desc'));
             }
 
@@ -136,14 +194,11 @@ const PolicyDetail = () => {
                 id: doc.id,
                 ...doc.data()
             }));
-            setPosts(postsData); // Asumsi kamu punya state 'posts' dan 'setPosts'
+            setPosts(postsData); 
 
         } catch (error) {
             console.error("Error fetching posts for policy:", error);
-            // setError("Gagal memuat diskusi terkait."); // Kamu bisa tambahkan state error untuk posts
-        } finally {
-            setLoading(false);
-        }
+        } 
     }, [searchTerm, policyId]);
 
     const refreshDiscussions = () => {
@@ -156,7 +211,6 @@ const PolicyDetail = () => {
     }, [fetchPosts]);
 
     
-
     // Tampilkan Loading state
     if (loading || loadingVote) {
         return (
@@ -243,7 +297,7 @@ const PolicyDetail = () => {
                     </div>
                 </div>
 
-                {/* Kolom KANAN: Voting Widget & Aspirasi (1/3 lebar) */}
+                {/* Kolom KANAN: Voting Widget & Analisis Sentimen */}
                 <div className="lg:col-span-1 space-y-6">
 
                     {/* Voting Widget Card */}
@@ -281,6 +335,7 @@ const PolicyDetail = () => {
                         
                         <p className="text-xs text-gray-500 mb-3">Voting berakhir: {policyData.formattedDeadline}</p>
 
+                        {/* Tombol Berikan Suara */}
                         <button 
                             onClick={openModal} 
                             disabled={hasVoted || !currentUser}
@@ -288,7 +343,65 @@ const PolicyDetail = () => {
                         >
                             {hasVoted ? 'Anda Sudah Berpartisipasi' : !currentUser ? 'Login untuk Berikan Suara' : 'Berikan Suara'}
                         </button>
+                        
+                        {/* === LOKASI TOMBOL ANALISIS SENTIMEN (ADMIN ONLY) === */}
+                        {isAdmin && (
+                            <button
+                                onClick={triggerSentimentAnalysis}
+                                disabled={loadingSentiment}
+                                className="w-full mt-3 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center justify-center text-sm"
+                            >
+                                {loadingSentiment ? (
+                                    <Loader2 size={16} className="mr-2 animate-spin" />
+                                ) : (
+                                    <>
+                                        <Bot size={16} className="mr-2" />
+                                        Mulai Analisis Sentimen
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        {/* === AKHIR LOKASI TOMBOL === */}
+
                     </div>
+
+                    {/* === KARTU ANALISIS SENTIMEN DISPLAY (ADMIN ONLY) === */}
+                    {isAdmin && (
+                        <div className="bg-white p-6 rounded-xl shadow-lg">
+                            <div className="flex items-center mb-3 border-b pb-2">
+                                <Bot size={24} className="text-blue-600 mr-2" />
+                                <h2 className="text-xl font-bold text-gray-800">Analisis Sentimen AI</h2>
+                            </div>
+                            
+                            {loadingSentiment ? (
+                                <div className="flex justify-center py-5">
+                                    <Loader2 size={24} className="animate-spin text-blue-600" />
+                                    <p className="ml-3 text-sm text-gray-600">Menganalisis aspirasi...</p>
+                                </div>
+                            ) : sentimentData ? (
+                                <div className='space-y-3'>
+                                    <p className="text-sm">
+                                        <span className="font-semibold">Kesimpulan:</span> {sentimentData.sentimenKeseluruhan}
+                                    </p>
+                                    <p className="text-sm">
+                                        <span className="font-semibold">Perkiraan Sentimen:</span> {sentimentData.persentaseSetuju}% Setuju | {sentimentData.persentaseTidakSetuju}% Tidak Setuju
+                                    </p>
+                                    <p className="text-sm">
+                                        <span className="font-semibold">Tema Utama:</span> {sentimentData.temaUtama?.join(', ') || 'Tidak ada'}
+                                    </p>
+                                    <p className="text-sm italic text-gray-600 border-t pt-3 mt-3">
+                                        "{sentimentData.ringkasanKualitatif}"
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-2">Data di-cache dari AI.</p>
+                                </div>
+                            ) : errorSentiment ? (
+                                <p className="text-sm text-red-500 mt-2">{errorSentiment}</p>
+                            ) : (
+                                <p className="text-sm text-gray-500 mt-2">Belum ada analisis yang dilakukan.</p>
+                            )}
+                        </div>
+                    )}
+                    {/* === AKHIR KARTU ANALISIS SENTIMEN DISPLAY === */}
                     
                     {/* Ruang Aspirasi Warga (Comments Section) */}
                     
@@ -296,26 +409,15 @@ const PolicyDetail = () => {
 
                         {/* Bagian Judul */}
                         <div className="space-y-2">
-                            {/* Judul 
-                            - Ukuran teks dibuat lebih besar dan responsif (text-2xl -> md:text-3xl).
-                            - Warna diubah menjadi lebih gelap dan modern (text-slate-900).
-                            - border-b dihilangkan, diganti dengan pemisah di bawah nanti untuk look yang lebih clean.
-                            */}
                             <h2 className="text-xl  font-bold text-slate-900">
                             Ruang Aspirasi Warga
                             </h2>
-                            {/* Deskripsi
-                            - Warna teks dibuat lebih lembut (text-slate-500) untuk menciptakan hierarki visual.
-                            */}
                             <p className="text-slate-500 text-xs">
                             Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
                             </p>
                         </div>
                         
-                        {/* Form Input & Tombol
-                            - Menggunakan 'flex-col' di layar kecil, dan 'sm:flex-row' di layar lebih besar.
-                            - 'gap-3' memberikan jarak yang konsisten baik vertikal maupun horizontal.
-                        */}
+                        {/* Form Input & Tombol */}
                         <div className="flex flex-col sm:flex-row gap-2">
                             <input 
                             type="text" 
@@ -343,8 +445,6 @@ const PolicyDetail = () => {
                                 disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
                             "
                             >
-                            {/* Jika Anda punya icon, letakkan di sini. Akan terlihat bagus! */}
-                            {/* <Send size={20} /> */}
                             <span>Berikan Aspirasi</span>
                             </button>
                         </div>
@@ -361,11 +461,8 @@ const PolicyDetail = () => {
                             />
                         )}
                         
-                        {/* Daftar Diskusi
-                            - 'pt-6' memberikan jarak atas yang lebih besar.
-                            - 'border-t' menambahkan garis pemisah yang halus dan modern.
-                        */}
-                        <div className="space-y-4 pt-2 border-slate-200/80">
+                        {/* Daftar Diskusi */}
+                        <div className="space-y-4 pt-6 border-slate-200/80">
                             <PolicyDiscussionList 
                             sourceId={policy.id}
                             />
@@ -373,10 +470,6 @@ const PolicyDetail = () => {
                     </div>
                 </div>
             </div>
-
-            
-
-            
 
             {/* Modal Voting */}
             <VotingModal 

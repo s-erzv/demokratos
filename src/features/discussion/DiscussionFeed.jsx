@@ -5,7 +5,7 @@ import PostCard from './PostCard';
 import { useAuth } from '../../hooks/AuthContext';
 import AdminReportFeed from './AdminReportFeed';
 import CreatePostModal from './CreatePostModal';
-import ikonDiskusi from '../../assets/ikon-diskusi.svg';
+import ikonDiskusi from '../../assets/ikondiskusi.svg';
 
 
 const DiscussionFeed = () => {
