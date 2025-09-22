@@ -16,6 +16,7 @@ import Discussion from './pages/Discussion.jsx';
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
 import ThreadPage from './pages/ThreadPage.jsx';
+import ReplyPage from './pages/ReplyPage.jsx';
 
 import AdminRoute from './components/AdminRoute.jsx';  
 
@@ -79,6 +80,15 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             } 
           />
+
+          <Route 
+            path="/diskusi/:postId/comment/:commentId" 
+            element={
+              <ProtectedRoute>
+                <ReplyPage />
+              </ProtectedRoute>
+            } 
+          />
            
           <Route 
             path="/create-policy" 
@@ -98,6 +108,7 @@ createRoot(document.getElementById('root')).render(
             } 
           />
 
+          
         </Routes>
       </AuthProvider>
     </BrowserRouter>

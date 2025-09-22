@@ -1,11 +1,9 @@
-// src/components/features/discussion/CreateCommentForm.jsx
-
 import { useState } from 'react';
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/AuthContext';
 
-const CreateCommentForm = ({ postId, onCommentAdded }) => {
+const CreateCommentForm = ({ postId, parentCommentId = null, onCommentAdded }) => {
   const { currentUser, userData } = useAuth();
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,26 +19,48 @@ const CreateCommentForm = ({ postId, onCommentAdded }) => {
     setLoading(true);
     setError('');
 
-    try {
-      // 1. Tambahkan dokumen baru ke sub-koleksi 'comments'
-      const commentsCollection = collection(db, 'posts', postId, 'comments');
-      await addDoc(commentsCollection, {
+    let path;
+    let parentDocRef;
+
+    const data = {
         text: text,
         authorId: currentUser.uid,
         authorName: userData.fullName,
         authorPhotoURL: userData.photoURL,
         createdAt: serverTimestamp(),
-        likeCount: 0
-      });
+        likeCount: 0,
+        replyCount: 0 // <-- Balasan baru selalu dimulai dengan 0 reply
+    };
 
-      // 2. Update 'commentCount' di dokumen post utama
-      const postRef = doc(db, 'posts', postId);
-      await updateDoc(postRef, {
-          commentCount: increment(1)
-      });
+    if (parentCommentId) {
+      // Jika ini adalah balasan untuk sebuah komentar
+      path = collection(db, 'posts', postId, 'comments', parentCommentId, 'replies');
+      parentDocRef = doc(db, 'posts', postId, 'comments', parentCommentId);
+      data.parentCommentId = parentCommentId; // <-- SIMPAN ID INDUKNYA
+    } else {
+        // Jika ini adalah komentar level pertama
+        path = collection(db, 'posts', postId, 'comments');
+        parentDocRef = doc(db, 'posts', postId);
+    }
+
+    try {
+      // 3. Gunakan variabel 'path' yang dinamis untuk menyimpan data
+      await addDoc(path, data);
+
+      // 4. Update count di dokumen induk yang sesuai
+      if (parentCommentId) {
+        // Increment 'replyCount' di dokumen komentar induk
+        await updateDoc(parentDocRef, { replyCount: increment(1) });
+      } else {
+        // Increment 'commentCount' di dokumen post utama
+        await updateDoc(parentDocRef, { commentCount: increment(1) });
+      }
 
       setText(''); // Kosongkan form
-      onCommentAdded(); // Panggil fungsi untuk refresh daftar komentar
+      if (onCommentAdded) {
+        onCommentAdded(); // Beritahu parent untuk refresh dan/atau menutup form
+      }
+
 
     } catch (err) {
       console.error("Error adding comment: ", err);
@@ -63,7 +83,9 @@ const CreateCommentForm = ({ postId, onCommentAdded }) => {
         onChange={(e) => setText(e.target.value)}
         rows="4"
       />
+
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+
       <button type="submit" disabled={loading} className="mt-3 px-6 py-2 bg-red-800 text-white font-semibold rounded-md">
         {loading ? 'Mengirim...' : 'Kirim Balasan'}
       </button>
