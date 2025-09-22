@@ -18,7 +18,6 @@ import AdminRoute from './components/AdminRoute.jsx';
 import AllPoliciesPage from './pages/AllPoliciesPage';
 import Landing from './pages/Landing';
 import LaporPage from './pages/LaporPage.jsx';
-import AdminRoute from './components/AdminRoute.jsx';  
 import LaporDetailPage from './pages/LaporDetailPage.jsx';
 
 createRoot(document.getElementById('root')).render(
@@ -71,6 +70,7 @@ createRoot(document.getElementById('root')).render(
                 <LaporDetailPage/> 
               </ProtectedRoute>
             } 
+          />
           <Route
             path='/policies/all'
             element={

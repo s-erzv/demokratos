@@ -1,8 +1,48 @@
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import LaporCard from "../laporCard";
+import { useEffect, useState } from "react";
+import { db } from "../../../../firebase";
+import { useAuth } from "../../../../hooks/AuthContext";
 import { useLapor } from "../../hooks/useLapor";
 
 export default function LaporList({kategori}){
-    const { data } = useLapor()
+    const { isAdmin } = useLapor()
+    const { userData } = useAuth()
+
+    const [data, setData] = useState([])
+
+    if (isAdmin && kategori === "Laporan Anda") return null
+
+    async function fetchLaporan() {
+        try {
+            const laporanRef = collection(db, "laporan");
+            let q = query(laporanRef);
+
+            if (kategori === 'Terpopuler') {
+                q = query(q, orderBy("pendukung", "desc")); // 'desc' = descending (terbanyak ke terkecil)
+            }
+            if (kategori === 'Terbaru') {
+                q = query(q, orderBy("createdAt", "desc")); // 'desc' = descending (terbaru ke terlama)
+            }
+            if (kategori === 'Laporan Anda') {
+                q = query(laporanRef, where("authorId", "==", userData.uid));
+            }
+
+            const querySnapshot = await getDocs(q);
+            const laporanData = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+
+            setData(laporanData);
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    useEffect(() => {
+        fetchLaporan()
+    }, [])
 
     return(
         <>

@@ -8,8 +8,8 @@ import LaporList from "./subComponent/laporList";
 export default function Content(){
     return(
         <>
-            <LaporList kategori={"Laporan Terpopuler"}/>
-            <LaporList kategori={"Laporan Terbaru"}/>
+            <LaporList kategori={"Terpopuler"}/>
+            <LaporList kategori={"Terbaru"}/>
             <LaporList kategori={"Laporan Anda"}/>
         </>
     )

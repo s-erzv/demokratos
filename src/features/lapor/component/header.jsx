@@ -2,7 +2,7 @@ import { ChevronDown, Search } from "lucide-react";
 import { useLapor } from "../hooks/useLapor";
 
 export default function Header(){
-    const { setShow } = useLapor()
+    const { setShow, isAdmin } = useLapor()
 
     return(
         <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative overflow-hidden mb-10">
@@ -34,7 +34,7 @@ export default function Header(){
                         Filter
                         <ChevronDown />
                     </button>
-                    <button onClick={() => setShow(true)} className="bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
+                    <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors`}>
                         Lapor
                     </button>
                 </div>

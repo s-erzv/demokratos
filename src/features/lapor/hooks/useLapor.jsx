@@ -1,30 +1,16 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db, storage } from "../../../firebase";
-import { addDoc, collection, doc, getDocs, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { useAuth } from "../../../hooks/AuthContext";
 
 const LaporContext = createContext()
 
 export const LaporProvider = ({ children }) => {
 
-    const [data, setData] = useState([])
+    const { userData } = useAuth()
 
-    useEffect(() => {
-        fetchLaporan()
-    },[])
-
-    async function fetchLaporan() {
-        try {
-            const querySnapshot = await getDocs(collection(db, "laporan"));
-            const laporans = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            setData(laporans)
-        } catch (error) {
-            console.error(error)
-        }
-    }
+    const isAdmin = userData?.role === "admin"
 
     const [show, setShow] = useState(false)
     const [kategori, setKategori] = useState("")
@@ -49,7 +35,9 @@ export const LaporProvider = ({ children }) => {
 
                 const photoURL = await getDownloadURL(imageRef)
 
-                const docRef = await addDoc(collection(db, "laporan"), {
+                const newLaporanRef = doc(collection(db, "laporan"));
+                
+                const laporanData = {
                     judul: judul,
                     deskripsi: deskripsi,
                     kategori: kategori,
@@ -57,12 +45,12 @@ export const LaporProvider = ({ children }) => {
                     alamat: alamat,
                     status: "Baru diajukan",
                     pendukung: 0,
-                    authorId: user.uid
-                })
+                    authorId: user.uid,
+                    docId: newLaporanRef.id,
+                    createdAt: serverTimestamp() 
+                };
 
-                await updateDoc(docRef, {
-                    docId: docRef.id
-                });
+                await setDoc(newLaporanRef, laporanData);
 
                 console.log("Laporan berhasil dibuat")
                 setShow(false)
@@ -84,7 +72,7 @@ export const LaporProvider = ({ children }) => {
     }
 
     return(
-        <LaporContext.Provider value={{ show, setShow, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, data }}>
+        <LaporContext.Provider value={{ show, setShow, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, isAdmin }}>
             {children}
         </LaporContext.Provider>
     )

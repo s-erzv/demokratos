@@ -76,7 +76,7 @@ export default function LaporDetail(){
                         <User />
                         <div className="flex flex-row gap-2">
                             <p>{laporan.pendukung}</p>
-                            <p className="text-black">orang mendukung laporan ini</p>
+                            <p className="text-black">Pendukung</p>
                         </div>
                     </div>
                 </div>
