@@ -17,15 +17,9 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import AdminRoute from './components/AdminRoute.jsx';  
 import AllPoliciesPage from './pages/AllPoliciesPage';
 import Landing from './pages/Landing';
-
-// Hapus kode yang dikomen di bawah ini jika tidak digunakan
-// const router = createBrowserRouter ([
-//   {path: "/signin", element:
-//     <AuthRoute>
-//       <SignIn />
-//     </AuthRoute>
-//   },
-// ])
+import LaporPage from './pages/LaporPage.jsx';
+import AdminRoute from './components/AdminRoute.jsx';  
+import LaporDetailPage from './pages/LaporDetailPage.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -62,6 +56,21 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/laporan" 
+            element={
+              <ProtectedRoute>
+                <LaporPage/>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/laporan/:laporanId" 
+            element={
+              <ProtectedRoute>
+                <LaporDetailPage/> 
+              </ProtectedRoute>
+            } 
           <Route
             path='/policies/all'
             element={
