@@ -24,10 +24,6 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* sementara aja */}
-          <Route path='/laporan' element={<LaporPage/>}/>
-          <Route path='/laporan/:laporanId' element={<LaporDetailPage/>}/>
-
           {/* Rute Publik: Sign In dan Sign Up */}
           <Route path='/welcome' element={<Landing/>}/>
           <Route path="/signin" element={<SignIn />} />
@@ -55,6 +51,22 @@ createRoot(document.getElementById('root')).render(
             element={
               <ProtectedRoute>
                 <PolicyDetail /> 
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/laporan" 
+            element={
+              <ProtectedRoute>
+                <LaporPage/>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/laporan/:laporanId" 
+            element={
+              <ProtectedRoute>
+                <LaporDetailPage/> 
               </ProtectedRoute>
             } 
           />

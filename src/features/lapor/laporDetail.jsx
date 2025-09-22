@@ -1,11 +1,13 @@
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { doc, getDoc, increment, updateDoc, writeBatch } from "firebase/firestore";
+import { auth, db } from "../../firebase";
 import { MapPin, User } from "lucide-react";
+import { useAuth } from "../../hooks/AuthContext";
 
 export default function LaporDetail(){
     const { laporanId } = useParams()
+    const { userData } = useAuth()
 
     const [laporan, setLaporan] = useState([])
 
@@ -21,7 +23,36 @@ export default function LaporDetail(){
     }
 
     async function upVote() {
+        if (!userData) {
+            alert("Anda harus login untuk memberikan upvote!");
+            return;
+        }
+
+        const uid = userData.uid ;
         
+        const laporanRef = doc(db, "laporan", laporanId);
+        const pendukungRef = doc(laporanRef, "pendukung", uid);
+
+        try {
+            const docSnap = await getDoc(pendukungRef);
+
+            if (docSnap.exists()) {
+                alert("Anda sudah pernah mendukung laporan ini.");
+                return;
+            }
+            const batch = writeBatch(db);
+
+            batch.update(laporanRef, { pendukung: increment(1) });
+
+            batch.set(pendukungRef, { createdAt: new Date() });
+
+            await batch.commit();
+            
+            console.log("Upvote berhasil!");
+
+        } catch (error) {
+            console.error("Gagal memberikan upvote: ", error);
+        }
     }
 
     useEffect(() => {
@@ -54,7 +85,7 @@ export default function LaporDetail(){
                         <h1 className="text-4xl font-bold">{laporan.judul}</h1>
                         <p className="text-gray-400">{laporan.deskripsi}</p>
                     </div>
-                    <button className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Berikan suara untuk laporan ini</button>
+                    <button onClick={() => upVote()} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Berikan suara untuk laporan ini</button>
                 </div>
             </div>
             <div className="bg-white rounded-2xl h-full w-full border-2 shadow-2xl p-5 col-span-2 gap-3 flex flex-col">
