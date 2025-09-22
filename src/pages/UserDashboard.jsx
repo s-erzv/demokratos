@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout from '../components/MainLayout';
 import { useAuth } from '../hooks/AuthContext';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, orderBy, count } from 'firebase/firestore'; // Import count
-import { Filter, Loader2 } from 'lucide-react';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'; 
+import { Filter, Loader2, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Pastikan Link diimpor
+import Card from '../components/Card'; // Pastikan Card diimpor
  
 const UserReportCard = ({ children }) => (
     <div className="overflow-x-auto whitespace-nowrap pb-4" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
@@ -40,6 +42,7 @@ const UserDashboard = () => {
             const votesSnapshot = await getDocs(votesQuery);
             const votesCount = votesSnapshot.size;
              
+            // Mengasumsikan laporan yang dibuat user tersimpan di koleksi 'policies'
             const policiesCollection = collection(db, 'policies');
             const reportsQuery = query(
                 policiesCollection, 
@@ -56,7 +59,7 @@ const UserDashboard = () => {
                 return {
                     id: doc.id,
                     ...data,
-                    category: 'Laporan', 
+                    category: data.type === 'kebijakan' ? 'Kebijakan' : 'Program',
                     title: data.title, 
                     description: data.description,
                     date: formattedDate,
@@ -100,23 +103,19 @@ const UserDashboard = () => {
             </MainLayout>
         );
     }
-     
-    const backgroundStyle = { 
-        backgroundImage: `url('/bg-userdashboard.svg')`, 
-        backgroundPosition: 'right', 
-        backgroundRepeat: 'no-repeat', 
-    };
+      
 
     return (
         <MainLayout>
             <div className="space-y-8">
                  
                 <div 
-                    className="bg-white rounded-3xl shadow-lg p-6 sm:p-10 relative overflow-hidden border border-gray-100"
-                    style={backgroundStyle}
+                    className="bg-white rounded-3xl shadow-lg p-6 sm:p-10 relative overflow-hidden border border-gray-100
+                               /* Gambar hanya muncul di layar md: ke atas */
+                               md:bg-[url('/bg-userdashboard.svg')] md:bg-right md:bg-no-repeat"
                 > 
                     <div className="relative z-10">
-                        <p className="text-sm sm:text-base text-gray-600">Halo, {userData?.fullName || 'Warga Negara'}</p>
+                        <p className="text-sm sm:text-base text-gray-600 mt-6 md:mt-0">Halo, {userData?.fullName || 'Warga Negara'}</p>
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mt-1 mb-2">
                             Siap berpartisipasi hari ini?
                         </h1>
@@ -128,14 +127,16 @@ const UserDashboard = () => {
  
                 <div className="grid grid-cols-3 gap-4 sm:gap-6">
                     {statsVisuals.map((stat, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-md p-4 sm:p-6 text-center border border-gray-100">
-                            <p className={`text-3xl sm:text-4xl font-extrabold ${stat.color} mb-1`}>
+                        <div key={index} className="bg-white rounded-xl shadow-md p-3 sm:p-6 text-center border border-gray-100">
+                            {/* Menyesuaikan ukuran font untuk mobile */}
+                            <p className={`text-xl sm:text-4xl font-extrabold ${stat.color} mb-1`}>
                                 {stats[stat.key]}
                             </p>
-                            <p className="text-xs sm:text-sm text-gray-600 leading-tight">
+                            {/* Menyesuaikan ukuran font untuk mobile */}
+                            <p className="text-[10px] sm:text-sm text-gray-600 leading-tight">
                                 {stat.label}
                             </p>
-                            <span className="text-sm font-semibold text-gray-400 mt-2 block">{stat.unit}</span>
+                            <span className="text-xs font-semibold text-gray-400 mt-2 block">{stat.unit}</span>
                         </div>
                     ))}
                 </div>
@@ -145,10 +146,10 @@ const UserDashboard = () => {
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
                             Ringkasan Laporan Saya
                         </h2>
-                        <button className="flex items-center text-sm font-semibold bg-primary text-white py-1 px-4 rounded-full hover:bg-red-700 transition-colors">
+                        <Link to="/laporan" className="flex items-center text-sm font-semibold bg-primary text-white py-1 px-4 rounded-full hover:bg-red-700 transition-colors">
                             <Filter size={16} className="mr-1" />
-                            Filter
-                        </button>
+                            Lihat Semua
+                        </Link>
                     </div>
                     
                     {loadingReports ? (
@@ -157,11 +158,11 @@ const UserDashboard = () => {
                         </div>
                     ) : userReports.length === 0 ? (
                         <p className="text-gray-500 text-base text-center py-10">
-                            Anda belum membuat laporan apa pun.
+                            Anda belum membuat laporan/kebijakan.
                         </p>
                     ) : (
                         <UserReportCard>
-                            {userReports.map(report => (
+                            {userReports.slice(0, 5).map(report => (
                                 <div key={report.id} className="inline-block pr-4 last:pr-0 align-top w-[calc(100vw-4rem)] sm:w-[340px] md:w-[380px]">
                                     <Card 
                                         {...report}
