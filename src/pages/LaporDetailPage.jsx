@@ -1,10 +1,13 @@
 import MainLayout from "../components/MainLayout";
+import { LaporProvider } from "../features/lapor/hooks/useLapor";
 import LaporDetail from "../features/lapor/laporDetail";
 
 export default function LaporDetailPage(){
     return(
-        <MainLayout>
-            <LaporDetail/>
-        </MainLayout>
+        <LaporProvider>
+            <MainLayout>
+                <LaporDetail/>
+            </MainLayout>
+        </LaporProvider>
     )
 }
