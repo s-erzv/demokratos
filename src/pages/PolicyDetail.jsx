@@ -2,13 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout from '../components/MainLayout';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { doc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 import { Loader2, Users, Download, ThumbsUp, ThumbsDown, Send, ArrowLeft } from 'lucide-react';
 import VotingModal from '../components/VotingModal';
 import { useVoting } from '../hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
+import PolicyDiscussion from '../features/discussion/PolicyDiscussion';
+import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
 
 const PolicyDetail = () => {
+    const [isDiscussion, setIsDiscussion] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [posts, setPosts] = useState([]);
     const { policyId } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
@@ -17,7 +22,6 @@ const PolicyDetail = () => {
     const [comments, setComments] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [commentInput, setCommentInput] = useState('');
     
     // State baru untuk status voting pengguna
     const [hasVoted, setHasVoted] = useState(false);
@@ -58,7 +62,10 @@ const PolicyDetail = () => {
     // Fungsi untuk mengambil data policy (detail)
     const fetchPolicyData = useCallback(async () => {
         if (!policyId) return;
+
         setLoading(true);
+        setError('');
+        
         try {
             const policyDocRef = doc(db, 'policies', policyId);
             const docSnap = await getDoc(policyDocRef);
@@ -91,28 +98,63 @@ const PolicyDetail = () => {
             setLoading(false);
         }
     }, [policyId, currentUser, checkUserVoteStatus]);
-    
-    // Placeholder untuk fetch comments
-    const fetchComments = useCallback(async (id) => {
-        // TODO: Implementasi fetch comments
-        setComments([]);
-    }, []);
-
-    const handleCommentSubmit = (e) => {
-        e.preventDefault();
-        if (!currentUser) {
-            alert("Anda harus login untuk berkomentar.");
-            return;
-        }
-        if (commentInput.trim() === '') return;
-        
-        // TODO: Implementasi pengiriman komentar ke Firestore
-        setCommentInput('');
-    };
 
     useEffect(() => {
         fetchPolicyData();
     }, [fetchPolicyData]);
+    
+    // Placeholder untuk fetch comments
+    const fetchPosts = useCallback(async () => {
+        // Jangan fetch jika policyId belum ada
+        if (!policyId) return;
+
+        setLoading(true);
+        try {
+            const postsCollection = collection(db, 'posts');
+            let q; // Deklarasikan variabel query
+
+            // 1. Buat query dasar yang SELALU menyaring berdasarkan policyId
+            const baseQuery = query(
+                postsCollection, 
+                where("sourceId", "==", policyId)
+            );
+
+            // 2. Jika ada input di search bar, tambahkan saringan keywords
+            if (searchTerm.trim() !== '') {
+                q = query(
+                    baseQuery, 
+                    where('keywords', 'array-contains', searchTerm.toLowerCase())
+                );
+            } else {
+                // 3. Jika tidak ada input, cukup urutkan berdasarkan yang terbaru
+                q = query(baseQuery, orderBy('createdAt', 'desc'));
+            }
+
+            const querySnapshot = await getDocs(q);
+            const postsData = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setPosts(postsData); // Asumsi kamu punya state 'posts' dan 'setPosts'
+
+        } catch (error) {
+            console.error("Error fetching posts for policy:", error);
+            // setError("Gagal memuat diskusi terkait."); // Kamu bisa tambahkan state error untuk posts
+        } finally {
+            setLoading(false);
+        }
+    }, [searchTerm, policyId]);
+
+    const refreshDiscussions = () => {
+        // Trik sederhana untuk refresh: ubah key di komponen list
+        // Tapi untuk sekarang, kita bisa biarkan kosong karena komponen akan refresh sendiri
+    };
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
+
+    
 
     // Tampilkan Loading state
     if (loading || loadingVote) {
@@ -248,53 +290,91 @@ const PolicyDetail = () => {
                     </div>
                     
                     {/* Ruang Aspirasi Warga (Comments Section) */}
-                    <div className="bg-white p-6 rounded-xl shadow-lg space-y-4">
-                        <h2 className="text-xl font-bold text-gray-800 border-b pb-3">Ruang Aspirasi Warga</h2>
+                    
+                    <div className="bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
+
+                        {/* Bagian Judul */}
+                        <div className="space-y-2">
+                            {/* Judul 
+                            - Ukuran teks dibuat lebih besar dan responsif (text-2xl -> md:text-3xl).
+                            - Warna diubah menjadi lebih gelap dan modern (text-slate-900).
+                            - border-b dihilangkan, diganti dengan pemisah di bawah nanti untuk look yang lebih clean.
+                            */}
+                            <h2 className="text-xl  font-bold text-slate-900">
+                            Ruang Aspirasi Warga
+                            </h2>
+                            {/* Deskripsi
+                            - Warna teks dibuat lebih lembut (text-slate-500) untuk menciptakan hierarki visual.
+                            */}
+                            <p className="text-slate-500 text-xs">
+                            Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
+                            </p>
+                        </div>
                         
-                        {/* Input Komentar */}
-                        <form onSubmit={handleCommentSubmit} className="flex space-x-2">
+                        {/* Form Input & Tombol
+                            - Menggunakan 'flex-col' di layar kecil, dan 'sm:flex-row' di layar lebih besar.
+                            - 'gap-3' memberikan jarak yang konsisten baik vertikal maupun horizontal.
+                        */}
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <input 
-                                type="text"
-                                placeholder={currentUser ? "Tulis Aspirasi Anda..." : "Login untuk berkomentar..."}
-                                value={commentInput}
-                                onChange={(e) => setCommentInput(e.target.value)}
-                                disabled={!currentUser}
-                                className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-gray-50"
-                                required
+                            type="text" 
+                            placeholder="Tuliskan aspirasi atau cari topik diskusi..." 
+                            className="
+                                w-full px-4 py-2 bg-slate-50 border border-red-800 text-slate-800
+                                placeholder-slate-400 rounded-full
+                                focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
+                                transition duration-300 ease-in-out
+                            "
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             />
+
                             <button 
-                                type="submit"
-                                disabled={!currentUser}
-                                className="p-3 bg-primary text-white rounded-full hover:bg-red-800 transition-colors disabled:bg-gray-400"
-                                aria-label="Kirim Aspirasi"
+                            type="submit"
+                            disabled={!currentUser}
+                            onClick={() => setIsDiscussion(true)}
+                            aria-label="Kirim Aspirasi"
+                            className="
+                                flex items-center justify-center gap-2 w-full sm:w-auto text-xs flex-shrink-0
+                                px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md
+                                hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                                transition-all duration-300 ease-in-out transform hover:scale-105
+                                disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+                            "
                             >
-                                <Send size={20} />
+                            {/* Jika Anda punya icon, letakkan di sini. Akan terlihat bagus! */}
+                            {/* <Send size={20} /> */}
+                            <span>Berikan Aspirasi</span>
                             </button>
-                        </form>
+                        </div>
                         
-                        {/* Daftar Komentar */}
-                        <div className="space-y-4 pt-3">
-                            {comments.map(comment => (
-                                <div key={comment.id} className="border-b pb-3 last:border-b-0">
-                                    <p className="text-sm font-semibold text-gray-800">{comment.author}</p>
-                                    <p className="text-xs text-gray-500 mb-2">{comment.time}</p>
-                                    <p className="text-gray-700 text-sm">{comment.text}</p>
-                                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                                        <button className="flex items-center hover:text-primary transition-colors">
-                                            <ThumbsUp size={14} className="mr-1" /> {comment.likes || 0}
-                                        </button>
-                                        <button className="flex items-center hover:text-red-600 transition-colors">
-                                            <ThumbsDown size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            {comments.length === 0 && !loading && <p className="text-sm text-gray-500">Belum ada aspirasi untuk kebijakan ini.</p>}
+                        {/* Bagian untuk menampilkan form diskusi (Modal/Component) */}
+                        {policy && isDiscussion && (
+                            <PolicyDiscussion 
+                                isOpen={isDiscussion}
+                                onClose={() => setIsDiscussion(false)}
+                                onPostCreated={fetchPosts} 
+                                policyId={policy.id} 
+                                policyType={policy.type}
+                            />
+                        )}
+                        
+                        {/* Daftar Diskusi
+                            - 'pt-6' memberikan jarak atas yang lebih besar.
+                            - 'border-t' menambahkan garis pemisah yang halus dan modern.
+                        */}
+                        <div className="space-y-4 pt-6 border-slate-200/80">
+                            <PolicyDiscussionList 
+                            policyId={policy.id}
+                            />
                         </div>
                     </div>
-
                 </div>
             </div>
+
+            
+
+            
 
             {/* Modal Voting */}
             <VotingModal 

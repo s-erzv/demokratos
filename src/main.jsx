@@ -12,8 +12,12 @@ import PolicyDetail from './pages/PolicyDetail.jsx';
 import SignIn from './components/signin/SignIn.jsx';
 import SignUp from './components/signup/SignUp.jsx';
 import Profile from './pages/Profile.jsx'; 
+import Discussion from './pages/Discussion.jsx';
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
+import ThreadPage from './pages/ThreadPage.jsx';
+import ReplyPage from './pages/ReplyPage.jsx';
+
 import AdminRoute from './components/AdminRoute.jsx';  
 import AllPoliciesPage from './pages/AllPoliciesPage';
 import Landing from './pages/Landing';
@@ -88,6 +92,33 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             } 
           />
+
+          <Route 
+            path="/diskusi" 
+            element={
+              <ProtectedRoute>
+                <Discussion /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/diskusi/:postId" 
+            element={
+              <ProtectedRoute>
+                <ThreadPage /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/diskusi/:postId/comment/:commentId" 
+            element={
+              <ProtectedRoute>
+                <ReplyPage />
+              </ProtectedRoute>
+            } 
+          />
            
           <Route 
             path="/create-policy" 
@@ -107,6 +138,7 @@ createRoot(document.getElementById('root')).render(
             } 
           />
 
+          
         </Routes>
       </AuthProvider>
     </BrowserRouter>
