@@ -18,7 +18,7 @@ const IdNavbar = () => {
             Demokratos
           </a>
         
-          <div className="flex flex-row gap-10 2xl:text-2xl text-xl max-md:hidden 2xl:gap-13">
+          <div className="flex flex-row gap-10 xl:text-2xl lg:text-xl md:text-lg max-md:hidden 2xl:gap-13">
             <a
               className="hover:border-b-2 border-hover-button duration-100 hover:scale-105"
               href="/welcome#features"
@@ -63,28 +63,21 @@ const IdNavbar = () => {
       >
         <a
           className=" bg-primary py-2 px-4 rounded-xl"
-          href="/#features"
+          href="/welcome#features"
           onClick={() => setSeeMore(false)}
         >
           Features
         </a>
         <a
           className=" bg-primary py-2 px-4 rounded-xl"
-          href="/#demo"
-          onClick={() => setSeeMore(false)}
-        >
-          Demo
-        </a>
-        <a
-          className=" bg-primary py-2 px-4 rounded-xl"
-          href="/#flow"
+          href="/welcome#flow"
           onClick={() => setSeeMore(false)}
         >
           How it Works
         </a>
         <a
           className="bg-primary py-2 px-4 rounded-xl"
-          href="/#team"
+          href="/welcome#team"
           onClick={() => setSeeMore(false)}
         >
           Our Team
