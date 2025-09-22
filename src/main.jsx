@@ -17,8 +17,6 @@ import { AuthProvider } from './hooks/AuthContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
 import ThreadPage from './pages/ThreadPage.jsx';
 import ReplyPage from './pages/ReplyPage.jsx';
-
-import AdminRoute from './components/AdminRoute.jsx';  
 import AllPoliciesPage from './pages/AllPoliciesPage';
 import Landing from './pages/Landing';
 import LaporPage from './pages/LaporPage.jsx';
@@ -75,6 +73,7 @@ createRoot(document.getElementById('root')).render(
                 <LaporDetailPage/> 
               </ProtectedRoute>
             } 
+          />
           <Route
             path='/policies/all'
             element={
