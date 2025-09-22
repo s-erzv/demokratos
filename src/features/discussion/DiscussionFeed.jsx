@@ -160,8 +160,9 @@ const DiscussionFeed = () => {
         <p className="text-slate-500">Memuat diskusi...</p>
       </div>
     ) : posts.length > 0 ? (
+
       // Inilah kontainer utamanya: satu kartu putih dengan shadow dan sudut membulat.
-      <div className="bg-white rounded-3xl shadow-lg border border-slate-200/80">
+      <div className="bg-white px-10 rounded-3xl shadow-lg border border-slate-200/80">
         {posts.map((post) => (
           // Setiap post dibungkus div dengan garis bawah (border-b).
           // 'last:border-b-0' adalah trik untuk menghilangkan garis pada item terakhir.

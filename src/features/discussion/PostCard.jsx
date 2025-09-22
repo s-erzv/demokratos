@@ -75,7 +75,7 @@ const PostCard = ({ post, onUpdate }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(post.likeCount);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const { currentUser, isAdmin } = useAuth();
+    const { currentUser, isAdmin, userData } = useAuth();
     const [isLiking, setIsLiking] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -154,7 +154,7 @@ const PostCard = ({ post, onUpdate }) => {
       
 
     return (
-      <div className="px-5 sm:px-14  ">
+      <div className="p  ">
         
         {/* STRUKTUR DIUBAH: Kembali ke layout satu kolom untuk konten utama,
             dengan baris atas khusus untuk info penulis dan waktu. */}
@@ -231,7 +231,8 @@ const PostCard = ({ post, onUpdate }) => {
         <ReportModal 
           isOpen={isReportModalOpen} 
           onClose={() => setIsReportModalOpen(false)}
-          postId={post.id}
+          post={post}
+          userData={userData}
         />
 
         <ConfirmationModal

@@ -105,9 +105,9 @@ const CreateCommentForm = ({ postId, parentCommentId = null, onCommentAdded }) =
         <button 
           type="submit" 
           disabled={loading} 
-          className="w-full sm:w-auto px-6 py-2 bg-primary text-white font-semibold rounded-full shadow-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
+          className="w-full sm:w-auto px-6  py-2 bg-primary text-white font-semibold rounded-full shadow-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
         >
-          {loading ? 'Mengirim...' : 'Kirim Balasan'}
+          {loading ? 'Mengirim...' : 'balas'}
         </button>
       </div>
     </form>

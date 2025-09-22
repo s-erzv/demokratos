@@ -7,6 +7,7 @@ const PolicyDiscussionList = ({ sourceId }) => {
   const [discussions, setDiscussions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
 
   const fetchDiscussions = useCallback(async () => {
     // 2. Jaga agar tidak fetch jika sourceId belum siap

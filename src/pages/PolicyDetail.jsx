@@ -292,7 +292,7 @@ const PolicyDetail = () => {
                     
                     {/* Ruang Aspirasi Warga (Comments Section) */}
                     
-                    <div className="bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
+                    <div className="bg-white py- px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
 
                         {/* Bagian Judul */}
                         <div className="space-y-2">
@@ -365,7 +365,7 @@ const PolicyDetail = () => {
                             - 'pt-6' memberikan jarak atas yang lebih besar.
                             - 'border-t' menambahkan garis pemisah yang halus dan modern.
                         */}
-                        <div className="space-y-4 pt-6 border-slate-200/80">
+                        <div className="space-y-4 pt-2 border-slate-200/80">
                             <PolicyDiscussionList 
                             sourceId={policy.id}
                             />

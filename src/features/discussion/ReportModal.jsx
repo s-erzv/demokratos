@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/AuthContext';
 import { reportPost } from './discussionService';
 
-const ReportModal = ({ isOpen, onClose, postId }) => {
+const ReportModal = ({ isOpen, onClose, post, userData }) => {
   const { currentUser } = useAuth();
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ const ReportModal = ({ isOpen, onClose, postId }) => {
     }
     setLoading(true);
 
-    const success = await reportPost(postId, currentUser.uid, reason);
+    const success = await reportPost(post, userData, reason);
     
     if (success) {
       alert("Laporan terkirim. Terima kasih.");

@@ -4,16 +4,18 @@ import { useState } from 'react';
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/AuthContext';
+import { uploadDiscussionFile } from './discussionService';
 import { X } from 'lucide-react';
 
 // Komponen ini menerima props dari halaman detail kebijakan
-const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, sourceId, additionalData = {} }) => {
+const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, sourceId, additionalData = {}, fileUrl ={} }) => {
   const { currentUser, userData } = useAuth();
   const [question, setQuestion] = useState('');
   const [body, setBody] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [file, setFile] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +28,15 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
     setError('');
 
     try {
+      // 1. Jika pengguna memilih file, unggah terlebih dahulu
+      if (file) {
+        fileUrl = await uploadDiscussionFile(file, currentUser.uid);
+        if (!fileUrl) {
+          // Gagal mengunggah file, hentikan proses
+          throw new Error("Gagal mengunggah file.");
+        }
+      }
+
       const authorInfo = isAnonymous 
         ? { authorName: 'Anonim', authorPhotoURL: null }
         : { authorName: userData.fullName, authorPhotoURL: userData.photoURL || null };
@@ -41,7 +52,8 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
         // Menggunakan props yang generik
         sourceType: sourceType,
         sourceId: sourceId,
-        ...additionalData // Menyalin properti tambahan seperti { type: 'kebijakan' } atau { kategori: 'Pendidikan' }
+        ...additionalData, // Menyalin properti tambahan seperti { type: 'kebijakan' } atau { kategori: 'Pendidikan' }
+        fileUrl: fileUrl,
       };
 
       // 1. Tambahkan dokumen diskusi baru
@@ -58,8 +70,10 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
         discussionCount: increment(1)
       });
       
+      setFile(null);
     } catch (err) {
-      console.error("Gagal memperbarui discussionCount di dokumen induk:", err);
+      console.error("Error creating discussion:", err);
+      setError(err.message || "Gagal memulai diskusi.");
     } finally {
       setLoading(false);
     }
@@ -90,7 +104,7 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
           {/* NOTE: Anda perlu menambahkan state dan handler untuk file upload ini */}
           {/* contoh: const [selectedFile, setSelectedFile] = useState(null); */}
           <div className="flex items-center justify-between p-3 sm:p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="font-medium text-slate-700 text-sm sm:text-base">Upload File</span>
+            <span className="font-medium text-slate-700 text-sm sm:text-base">{file ? file.name : 'Upload File (Opsional)'}</span>
             <label 
               htmlFor="file-upload" 
               className="cursor-pointer text-sm font-semibold bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors"
@@ -98,9 +112,10 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
               Pilih File
             </label>
             <input 
-              id="file-upload" 
-              name="file-upload" 
-              type="file" 
+              id='file-upload'
+               type='file'
+               accept='.jpg, .jpeg, .png'
+               onChange={(e) => setFile(e.target.files[0])}
               className="sr-only"
               // onChange={(e) => setSelectedFile(e.target.files[0])}
             />

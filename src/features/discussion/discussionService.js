@@ -2,6 +2,7 @@
 
 import { doc, runTransaction, collection, getDoc, setDoc, increment, deleteDoc, writeBatch } from "firebase/firestore";
 import { db } from "../../firebase"
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 /**
  * Mengelola logika like/unlike untuk sebuah post.
@@ -9,6 +10,8 @@ import { db } from "../../firebase"
  * @param {string} commentId - ID dari komentar yang di-like.
  * @param {string} replyId - ID dari balasan yang di-like.
  * @param {string} userId - UID dari pengguna yang melakukan aksi.
+ * @param {File} file - File yang akan diunggah.
+ * @returns {Promise<string>} - URL download dari file yang diunggah.
  */
 export const toggleLikePost = async (postId, userId) => {
   if (!postId || !userId) return;
@@ -39,10 +42,12 @@ export const toggleLikePost = async (postId, userId) => {
 };
 
 export const reportPost = async (post, currentUserData, reason) => {
+  if (!post || !currentUserData || !reason) return false;
+
   const { uid: reporterId, fullName: reporterName } = currentUserData;
   const { id: postId, authorId: reportedPostAuthorId } = post;
 
-  if (!postId || !reporterId || !reason) return false;
+
 
   const reportRef = doc(db, 'posts', postId, 'reports', reporterId);
   const reportDoc = await getDoc(reportRef);
@@ -134,5 +139,32 @@ export const toggleReplyLike = async (postId, parentCommentId, replyId, userId) 
   } catch (error) {
     console.error("Transaksi like/unlike balasan gagal: ", error);
     return false;
+  }
+};
+
+export const uploadDiscussionFile = async (file, userId) => {
+  if (!file || !userId) return null;
+
+  // Dapatkan referensi ke Firebase Storage
+  const storage = getStorage();
+  
+  // Buat path yang unik untuk setiap file untuk menghindari tumpukan nama
+  // Contoh: discussions/user_id_123/1677889900_namafile.jpg
+  const filePath = `discussions/${userId}/${Date.now()}_${file.name}`;
+  const fileRef = ref(storage, filePath);
+
+  try {
+    // Unggah file
+    const snapshot = await uploadBytes(fileRef, file);
+    
+    // Dapatkan URL download setelah berhasil diunggah
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    console.log("File berhasil diunggah:", downloadURL);
+    return downloadURL;
+
+  } catch (error) {
+    console.error("Error mengunggah file:", error);
+    return null; // Kembalikan null jika gagal
   }
 };
