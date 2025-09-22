@@ -65,7 +65,6 @@ function SignUp({ toggleAuthMode }) {
             await createUserDocument(user, additionalData);
             setSuccess("Pendaftaran berhasil!");
             
-            // Arahkan ke Dashboard
             navigate('/', { replace: true }); 
 
         } catch (err) {
@@ -91,55 +90,58 @@ function SignUp({ toggleAuthMode }) {
     
 
     return (
-        <div className='w-full flex min-h-screen bg-black p-5 gap-10 '>
-                {/* highlight */}
-                <div className='w-5/12'>
-                    <HighlightSlider />
-                </div>
+        <div className='w-full flex h-screen p-0 md:p-2 bg-black overflow-hidden gap-2'>
+            
+            {/* Kolom Kiri: Slider Highlight */}
+            <div className='w-0 md:w-5/12 hidden md:block h-full'>
+              <HighlightSlider />
+            </div>
 
-                {/* form */}
-                <div className="space-y-3 px-3 lg:px-5 2xl:px-12 w-7/12 bg-white rounded-lg">
-                    <div className="flex flex-col justify-center items-center mt-0 mb-2 md:mt-5 lg:mt-10">
-                        <img src="/logo demokratos.svg" alt="logo demokratos" className='size-5 ' />   
-                        <h2 className="text-black text-3xl md:text-4xl 2xl:text-7xl font-bold ">Buat akun baru</h2>
-                        <p className="text-black text-xs 2xl:text-2xl 2xl:mt-5 2xl:mb-13 mt-2 mb-5 text-text  ">Gabung dan ikut berpartisipasi membangun negeri.</p>
-                    </div>
+            {/* Kolom Kanan: Formulir Pendaftaran */}
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white rounded-none md:rounded-3xl shadow-lg h-full md:h-full overflow-y-auto">
+              
+              <div className="w-full max-w-sm flex flex-col items-center text-center">
+                <div className=" size-16 mb-4 flex items-center justify-center overflow-hidden">
+                    <img src="/demokratos.svg" alt="Logo Demokratos" className='w-full h-full p-2' />
+                </div>   
+                
+                <h2 className="text-3xl font-bold text-gray-800">Buat akun baru</h2>
+                <p className="text-sm text-gray-500 mt-2 mb-6">Gabung dan ikut berpartisipasi membangun negeri.</p>
+              </div>
 
-                    {error && <p className="p-2 2xl:px-10 2xl:py-5 text-center text-red-800 bg-red-100 rounded-full text-sm md:text-base 2xl:text-2xl">{error}</p>}
-                    {success && <p className="p-2 2xl:px-10 2xl:py-5 text-sm md:text-base 2xl:text-2xl text-center text-green-800 bg-green-100 rounded-full">{success}</p>}
+              {error && <p className="p-2 text-center text-red-800 bg-red-100 rounded-full text-xs w-full max-w-sm">{error}</p>}
+              {success && <p className="p-2 text-xs text-center text-green-800 bg-green-100 rounded-full w-full max-w-sm">{success}</p>}
 
-                    <form onSubmit={handleSignUp} className="space-y-3 2xl:space-y-6 pt-2 sm:pt-4">
-                        <FloatingLabelInput id="nik" label="Nomer Induk Kependudukan (NIK)" type="text" inputMode="numeric" value={nik} onChange={(e) => setNik(e.target.value)} />
-                        <FloatingLabelInput id="fullName" label="Full Name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                        <FloatingLabelInput id="email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <FloatingLabelInput id="number" label="Nomer HP" type="tel" inputMode="numeric" value={number} onChange={(e) => setNumber(e.target.value)} />
-                        <FloatingLabelInput id="password" label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                        <FloatingLabelInput id="confirmPassword" label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <form onSubmit={handleSignUp} className="space-y-4 w-full max-w-sm">
+                <FloatingLabelInput id="nik" label="Nomer Induk Kependudukan (NIK)" type="text" inputMode="numeric" value={nik} onChange={(e) => setNik(e.target.value.replace(/[^0-9]/g, '').slice(0, 16))} />
+                <FloatingLabelInput id="fullName" label="Nama Lengkap" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                <FloatingLabelInput id="email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <FloatingLabelInput id="number" label="Nomer HP" type="tel" inputMode="numeric" value={number} onChange={(e) => setNumber(e.target.value)} />
+                <FloatingLabelInput id="password" label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <FloatingLabelInput id="confirmPassword" label="Konfirmasi Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-2 2xl:py-5 font-bold bg-primary dark:text-button-dark dark:hover:bg-hover-button-dark
-                            text-white text-sm md:text-base 2xl:text-3xl rounded-full hover:bg-hover-button focus:outline-none"
-                        >
-                            Buat Akun
-                        </button>
-                    </form>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 font-bold bg-primary text-white text-base rounded-lg hover:bg-red-800 transition-colors disabled:bg-gray-400"
+                >
+                    {loading ? 'Mendaftar...' : 'Buat Akun'}
+                </button>
+              </form>
 
-                    <div className="mt-2 text-center text-xs text-text ">
-                        <p>Sudah punya akun?{' '}
-                            <button 
-                                onClick={toggleAuthMode} 
-                                className="font-semibold text-primary hover:underline"
-                            >
-                                masuk di sini
-                            </button>
-                        </p>
-                    </div>
+              <div className="text-center text-sm text-gray-600 mt-4">
+                <p>Sudah punya akun?{' '}
+                    <button 
+                        onClick={toggleAuthMode} 
+                        className="font-semibold text-primary hover:underline"
+                    >
+                        Masuk di sini
+                    </button>
+                </p>
+              </div>
 
-                </div>
+            </div>
         </div>
-        
     );
 }
 

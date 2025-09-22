@@ -6,11 +6,16 @@ import './global.css';
 
 import Dashboard from './pages/Dashboard';
 import PolicyVoting from './pages/PolicyVoting.jsx';
+import CreatePolicy from './pages/CreatePolicy.jsx';  
+import EditPolicy from './pages/EditPolicy.jsx'; 
+import PolicyDetail from './pages/PolicyDetail.jsx';
 import SignIn from './components/signin/SignIn.jsx';
 import SignUp from './components/signup/SignUp.jsx';
 import Profile from './pages/Profile.jsx'; 
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
+import AdminRoute from './components/AdminRoute.jsx';  
+import AllPoliciesPage from './pages/AllPoliciesPage';
 import Landing from './pages/Landing';
 
 // Hapus kode yang dikomen di bawah ini jika tidak digunakan
@@ -31,8 +36,7 @@ createRoot(document.getElementById('root')).render(
           <Route path='/welcome' element={<Landing/>}/>
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-
-          {/* Rute Terlindungi (Membutuhkan Login) */}
+ 
           <Route 
             path="/" 
             element={
@@ -50,6 +54,22 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/vote/:policyId" 
+            element={
+              <ProtectedRoute>
+                <PolicyDetail /> 
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path='/policies/all'
+            element={
+              <ProtectedRoute>
+                <AllPoliciesPage />
+              </ProtectedRoute>
+            }
+          />
           
           <Route 
             path="/profile" 
@@ -59,6 +79,25 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             } 
           />
+           
+          <Route 
+            path="/create-policy" 
+            element={
+              <AdminRoute>
+                <CreatePolicy /> 
+              </AdminRoute>
+            } 
+          />
+           
+          <Route 
+            path="/edit-policy/:policyId" 
+            element={
+              <AdminRoute>
+                <EditPolicy /> 
+              </AdminRoute>
+            } 
+          />
+
         </Routes>
       </AuthProvider>
     </BrowserRouter>
