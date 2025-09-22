@@ -12,20 +12,16 @@ import PolicyDetail from './pages/PolicyDetail.jsx';
 import SignIn from './components/signin/SignIn.jsx';
 import SignUp from './components/signup/SignUp.jsx';
 import Profile from './pages/Profile.jsx'; 
+import Discussion from './pages/Discussion.jsx';
 import { AuthProvider } from './hooks/AuthContext.jsx'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
-import AdminRoute from './components/AdminRoute.jsx';  
+import ThreadPage from './pages/ThreadPage.jsx';
+import ReplyPage from './pages/ReplyPage.jsx';
 import AllPoliciesPage from './pages/AllPoliciesPage';
 import Landing from './pages/Landing';
-
-// Hapus kode yang dikomen di bawah ini jika tidak digunakan
-// const router = createBrowserRouter ([
-//   {path: "/signin", element:
-//     <AuthRoute>
-//       <SignIn />
-//     </AuthRoute>
-//   },
-// ])
+import LaporPage from './pages/LaporPage.jsx';
+import AdminRoute from './components/AdminRoute.jsx';  
+import LaporDetailPage from './pages/LaporDetailPage.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -62,6 +58,22 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/laporan" 
+            element={
+              <ProtectedRoute>
+                <LaporPage/>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/laporan/:laporanId" 
+            element={
+              <ProtectedRoute>
+                <LaporDetailPage/> 
+              </ProtectedRoute>
+            } 
+          />
           <Route
             path='/policies/all'
             element={
@@ -76,6 +88,33 @@ createRoot(document.getElementById('root')).render(
             element={
               <ProtectedRoute>
                 <Profile /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/diskusi" 
+            element={
+              <ProtectedRoute>
+                <Discussion /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/diskusi/:postId" 
+            element={
+              <ProtectedRoute>
+                <ThreadPage /> 
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/diskusi/:postId/comment/:commentId" 
+            element={
+              <ProtectedRoute>
+                <ReplyPage />
               </ProtectedRoute>
             } 
           />
@@ -98,6 +137,7 @@ createRoot(document.getElementById('root')).render(
             } 
           />
 
+          
         </Routes>
       </AuthProvider>
     </BrowserRouter>

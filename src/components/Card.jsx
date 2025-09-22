@@ -30,7 +30,6 @@ const Card = ({ title, description, category, imageUrl, votes, date, isAdmin, id
             </div>
         )}
       </div>
-      
       {/* Container utama konten kartu */}
       <div className="p-4 sm:p-5 flex flex-col flex-grow"> 
         

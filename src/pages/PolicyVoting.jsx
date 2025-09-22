@@ -39,7 +39,6 @@ const PolicyVoting = () => {
       setLoading(true);
       
       const policiesCollection = collection(db, 'policies');
-      
       const q = query(policiesCollection, orderBy('createdAt', 'desc'));
       
       const querySnapshot = await getDocs(q);
@@ -258,6 +257,7 @@ const PolicyVoting = () => {
             <div className="fixed bottom-8 right-8 z-30">
                 <Link 
                     to="/create-policy" 
+
                     className="flex items-center p-4 bg-primary text-white rounded-full shadow-lg hover:bg-red-700 transition-colors transform hover:scale-110"
                     aria-label="Buat Vote Baru"
                 >

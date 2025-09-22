@@ -10,12 +10,12 @@ const Hero = () => {
         className={`h-full w-full bg-[url('/landingpage/heroBg.svg')] relative`}
         id="hero"
       >
-        <div className="h-screen w-full bg-gradient-to-b from-white to-transparent from-30% flex flex-col items-center justify-center gap-10">
+        <div className="h-screen w-full bg-gradient-to-b from-white to-transparent from-30% flex flex-col items-center justify-center gap-10 px-5">
 
-          <p className="py-1 px-4 sm:py-2 sm:px-5 rounded-full lg:text-xl md:text-lg sm:text-sm text-xs border-2 border-neutral-400/50 bg-white text-secondary">
+          <p className="py-1 px-4 sm:py-2 sm:px-5 rounded-full xl:text-xl md:text-lg sm:text-sm text-xs border-2 border-neutral-400/50 bg-white text-secondary">
             Transparan • Praktis • Demokratis
           </p>
-          <h1 className="lg:text-7xl md:text-6xl sm:text-5xl text-4xl font-bold text-center text-primary">
+          <h1 className="xl:text-7xl lg:text-6xl md:text-5xl sm:text-4xl text-3xl font-bold text-center text-primary">
             Partisipasi Mudah, Dampak Nyata
           </h1>
           <h2 className="lg:text-2xl md:text-lg text-sm text-center">

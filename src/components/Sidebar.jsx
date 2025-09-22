@@ -8,7 +8,7 @@ const menuItems = [
   { name: 'Home', icon: Home, link: '/' },
   { name: 'Vote Kebijakan', icon: Mic, link: '/vote' },
   { name: 'Laporan', icon: FileText, link: '/laporan' },
-  { name: 'Discussion', icon: Users, link: '/discussion' },
+  { name: 'Diskusi', icon: Users, link: '/diskusi' },
 ];
 
 const Sidebar = () => {
