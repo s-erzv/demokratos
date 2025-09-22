@@ -70,7 +70,6 @@ const DiscussionFeed = () => {
     
     // Container utama tidak lagi dibatasi 'max-w-4xl', biarkan MainLayout yang mengatur
   <div className="space-y-8">
-    {isAdmin && <AdminReportFeed />}
     
     {/* Header Baru: Mengadopsi style dari contoh Anda */}
     <header className="bg-white rounded-3xl shadow-lg  flex justify-between items-center">
@@ -152,6 +151,8 @@ const DiscussionFeed = () => {
       />
     </div>
   </header>
+
+  {isAdmin && <AdminReportFeed />}
         
     {/* Daftar Post: Dengan loading & empty state yang lebih baik */}
     {loading ? (

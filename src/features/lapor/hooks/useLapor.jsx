@@ -51,6 +51,7 @@ export const LaporProvider = ({ children }) => {
                     status: "Baru diajukan",
                     pendukung: 0,
                     authorId: user.uid,
+                    discussionCount: 0,
                     docId: newLaporanRef.id,
                     createdAt: serverTimestamp() 
                 };

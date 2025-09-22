@@ -6,6 +6,38 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+async function deleteCollection(collectionPath, batchSize) {
+    const collectionRef = db.collection(collectionPath);
+    const query = collectionRef.orderBy('__name__').limit(batchSize);
+  
+    return new Promise((resolve, reject) => {
+      deleteQueryBatch(query, resolve).catch(reject);
+    });
+}
+  
+async function deleteQueryBatch(query, resolve) {
+    const snapshot = await query.get();
+  
+    const batchSize = snapshot.size;
+    if (batchSize === 0) {
+      // Jika tidak ada lagi dokumen, selesai.
+      resolve();
+      return;
+    }
+  
+    // Hapus dokumen dalam satu batch
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  
+    // Rekursif
+    process.nextTick(() => {
+      deleteQueryBatch(query, resolve);
+    });
+}
+
 exports.submitPolicy = functions.https.onRequest((req, res) => {
     cors(req, res, async () => {
         
@@ -204,4 +236,47 @@ exports.votePolicy = functions.https.onRequest((req, res) => {
             return res.status(500).json({ status: 'error', message: `Gagal mencatat suara. ${error.message}` });
         }
     });
+});
+
+exports.deletePost = functions.https.onCall(async (data, context) => {
+    // LOG: Awal eksekusi fungsi
+    functions.logger.info(`Fungsi deletePost dipanggil oleh UID: ${context.auth.uid}`, { structuredData: true });
+  
+    // 1. Keamanan: Pastikan pemanggil adalah admin
+    if (context.auth.token.admin !== true) {
+      functions.logger.warn(`Pengguna non-admin (UID: ${context.auth.uid}) mencoba menghapus post.`);
+      throw new functions.https.HttpsError("permission-denied", "Hanya admin yang bisa menghapus post.");
+    }
+  
+    const postId = data.postId;
+    if (!postId) {
+      functions.logger.error("Error: postId tidak diberikan.");
+      throw new functions.https.HttpsError("invalid-argument", "ID post tidak valid.");
+    }
+    
+    functions.logger.info(`Admin (UID: ${context.auth.uid}) memulai proses penghapusan untuk postId: ${postId}`);
+  
+    try {
+      const postRef = db.collection("posts").doc(postId);
+  
+      // Hapus sub-koleksi
+      functions.logger.info(`Menghapus sub-koleksi untuk post ${postId}...`);
+      await deleteCollection(`posts/${postId}/comments`, 50);
+      functions.logger.info(`Sub-koleksi 'comments' untuk post ${postId} dihapus.`);
+      await deleteCollection(`posts/${postId}/likes`, 50);
+      functions.logger.info(`Sub-koleksi 'likes' untuk post ${postId} dihapus.`);
+      await deleteCollection(`posts/${postId}/reports`, 50);
+      functions.logger.info(`Sub-koleksi 'reports' untuk post ${postId} dihapus.`);
+  
+      // Hapus dokumen post utama
+      await postRef.delete();
+      functions.logger.info(`Dokumen utama post ${postId} berhasil dihapus.`);
+  
+      return { message: `Post ${postId} dan sub-koleksinya berhasil dihapus.` };
+  
+    } catch (error) {
+      // LOG: Catat error yang detail sebelum dikirim ke client
+      functions.logger.error(`Error saat menghapus post ${postId}:`, error);
+      throw new functions.https.HttpsError("internal", "Terjadi kesalahan saat menghapus post.", error);
+    }
 });
