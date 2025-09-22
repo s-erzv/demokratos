@@ -7,8 +7,9 @@ import { Loader2, Users, Download, ThumbsUp, ThumbsDown, Send, ArrowLeft } from 
 import VotingModal from '../components/VotingModal';
 import { useVoting } from '../hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
-import PolicyDiscussion from '../features/discussion/PolicyDiscussion';
+import PolicyDiscussion from '../features/discussion/DiscussionForm';
 import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
+import DiscussionForm from '../features/discussion/DiscussionForm';
 
 const PolicyDetail = () => {
     const [isDiscussion, setIsDiscussion] = useState(false);
@@ -350,12 +351,13 @@ const PolicyDetail = () => {
                         
                         {/* Bagian untuk menampilkan form diskusi (Modal/Component) */}
                         {policy && isDiscussion && (
-                            <PolicyDiscussion 
+                            <DiscussionForm
                                 isOpen={isDiscussion}
                                 onClose={() => setIsDiscussion(false)}
                                 onPostCreated={fetchPosts} 
-                                policyId={policy.id} 
-                                policyType={policy.type}
+                                sourceType="policy"
+                                sourceId={policy.id}
+                                additionalData={{ type: policy.type }}
                             />
                         )}
                         
@@ -365,7 +367,7 @@ const PolicyDetail = () => {
                         */}
                         <div className="space-y-4 pt-6 border-slate-200/80">
                             <PolicyDiscussionList 
-                            policyId={policy.id}
+                            sourceId={policy.id}
                             />
                         </div>
                     </div>

@@ -1,47 +1,49 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from '../../firebase';
 import PostCard from './PostCard';
 
-const PolicyDiscussionList = ({ policyId }) => {
+const PolicyDiscussionList = ({ sourceId }) => {
   const [discussions, setDiscussions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const fetchDiscussions = useCallback(async () => {
+    // 2. Jaga agar tidak fetch jika sourceId belum siap
+    if (!sourceId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const postsCollection = collection(db, 'posts');
+      
+      // 3. Gunakan 'sourceId' di dalam query
+      const q = query(
+        postsCollection, 
+        where("sourceId", "==", sourceId),
+        orderBy("createdAt", "desc")
+      );
+
+      const querySnapshot = await getDocs(q);
+      const discussionsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      setDiscussions(discussionsData);
+    } catch (err) {
+      console.error("Error fetching discussions:", err);
+      setError("Gagal memuat diskusi.");
+    } finally {
+      setLoading(false);
+    }
+  }, [sourceId]); // 4. Jadikan 'sourceId' sebagai dependensi
+
   useEffect(() => {
-    const fetchDiscussions = async () => {
-      if (!policyId) return; // Jangan fetch jika tidak ada ID kebijakan
-
-      setLoading(true);
-      try {
-        const postsCollection = collection(db, 'posts');
-        
-        // --- INI ADALAH QUERY KUNCINYA ---
-        // Ambil semua post DI MANA 'sourceId' sama dengan 'policyId'
-        // dan urutkan berdasarkan yang terbaru.
-        const q = query(
-          postsCollection, 
-          where("sourceId", "==", policyId),
-          orderBy("createdAt", "desc")
-        );
-
-        const querySnapshot = await getDocs(q);
-        const discussionsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        setDiscussions(discussionsData);
-      } catch (err) {
-        console.error("Error fetching policy discussions:", err);
-        setError("Gagal memuat diskusi.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDiscussions();
-  }, [policyId]); // Jalankan ulang jika policyId berubah
+  }, [fetchDiscussions]);
 
   if (loading) {
     return <p className="text-center mt-8">Memuat diskusi...</p>;

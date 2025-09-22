@@ -57,7 +57,8 @@ export const LaporProvider = ({ children }) => {
                     alamat: alamat,
                     status: "Baru diajukan",
                     pendukung: 0,
-                    authorId: user.uid
+                    authorId: user.uid,
+                    discussionCount: 0
                 })
 
                 await updateDoc(docRef, {
