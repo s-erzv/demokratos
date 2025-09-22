@@ -21,6 +21,7 @@ import AllPoliciesPage from './pages/AllPoliciesPage';
 import Landing from './pages/Landing';
 import LaporPage from './pages/LaporPage.jsx';
 import LaporDetailPage from './pages/LaporDetailPage.jsx';
+import AdminRoute from './components/AdminRoute.jsx';  
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
