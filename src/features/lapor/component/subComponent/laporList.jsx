@@ -6,10 +6,11 @@ import { useAuth } from "../../../../hooks/AuthContext";
 import { useLapor } from "../../hooks/useLapor";
 
 export default function LaporList({kategori}){
-    const { isAdmin } = useLapor()
+    const { isAdmin, search } = useLapor()
     const { userData } = useAuth()
 
     const [data, setData] = useState([])
+    const [filteredData, setFilteredData] = useState([])
 
     if (isAdmin && kategori === "Laporan Anda") return null
 
@@ -44,11 +45,23 @@ export default function LaporList({kategori}){
         fetchLaporan()
     }, [])
 
+    useEffect(() => {
+        let result = data
+
+        if (search) {
+            result = data.filter(laporan => 
+                laporan.judul.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+
+        setFilteredData(result);
+    }, [search, data]);
+
     return(
         <>
             <h1 className="p-5 text-3xl font-bold border-b-2">{kategori}</h1>
             <div className="flex flex-row overflow-x-auto w-full gap-5 h-3/5 p-2 mb-5">
-                {data.map(laporan => (
+                {filteredData.map(laporan => (
                     <div key={laporan.id} className="flex-shrink-0">
                         <LaporCard imageURL={laporan.fileURL} judul={laporan.judul} deskripsi={laporan.deskripsi} alamat={laporan.alamat} kategori={laporan.kategori} status={laporan.status} pendukung={laporan.pendukung} id={laporan.docId}/>
                     </div>

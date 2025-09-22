@@ -2,7 +2,7 @@ import { ChevronDown, Search } from "lucide-react";
 import { useLapor } from "../hooks/useLapor";
 
 export default function Header(){
-    const { setShow, isAdmin } = useLapor()
+    const { setShow, isAdmin, setSearch, search } = useLapor()
 
     return(
         <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative overflow-hidden mb-10">
@@ -25,7 +25,9 @@ export default function Header(){
                     <div className="relative flex-1">
                         <input
                             type="text"
-                            placeholder="Telusuri daftar kebijakan..."
+                            placeholder="Telusuri daftar laporan..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                             className="w-full border border-gray-300 rounded-full py-2 pl-3 pr-10 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-150"
                         />
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />

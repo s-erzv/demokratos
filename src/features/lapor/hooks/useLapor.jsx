@@ -12,7 +12,9 @@ export const LaporProvider = ({ children }) => {
 
     const isAdmin = userData?.role === "admin"
 
+    const [search, setSearch] = useState("")
     const [showStatus, setShowStatus] = useState(false)
+
     const [show, setShow] = useState(false)
     const [kategori, setKategori] = useState("")
     const [file, setFile] = useState("")
@@ -73,7 +75,7 @@ export const LaporProvider = ({ children }) => {
     }
 
     return(
-        <LaporContext.Provider value={{ show, setShow, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, setShow, search, setSearch, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )

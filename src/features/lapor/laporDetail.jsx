@@ -10,7 +10,7 @@ import StatusModel from "./component/statusModal";
 export default function LaporDetail(){
     const { laporanId } = useParams()
     const { userData } = useAuth()
-    const { isAdmin, setShowStatus } = useLapor()
+    const { isAdmin, setShowStatus, search } = useLapor()
 
     const [laporan, setLaporan] = useState([])
 
