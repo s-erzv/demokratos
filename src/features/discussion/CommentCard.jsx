@@ -124,8 +124,6 @@ const CommentCard = ({ comment, postId, level = 0, hideReplyButton = false}) => 
             {comment.text}
           </p>
         </div>
-        
-        {/* Di sini bisa ditambahkan tombol aksi untuk komentar jika ada (suka, balas, dll) */}
 
       </div>
     </div>

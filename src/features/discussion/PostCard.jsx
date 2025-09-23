@@ -69,8 +69,6 @@ const Badge = ({ sourceType, type, kategori }) => {
 };
 
 const PostCard = ({ post, onUpdate }) => {
-
-
   const navigate = useNavigate();
     const [isLiked, setIsLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(post.likeCount);
@@ -196,6 +194,16 @@ const PostCard = ({ post, onUpdate }) => {
             {post.question}
           </h2>
           <p className="text-slate-600 text-sm leading-relaxed">{post.body}</p>
+
+          {post.fileUrl && (
+          <div className="mt-4">
+            <img 
+              src={post.fileUrl} 
+              alt="Lampiran diskusi" 
+              className="w-auto h-aut0 max-h-80 object-cover rounded-lg "
+            />
+          </div>
+          )}
         </div>
     
         {/* BAGIAN BAWAH: Tombol Aksi (Struktur tetap sama, di bawah konten) */}

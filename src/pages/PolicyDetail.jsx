@@ -111,31 +111,29 @@ const PolicyDetail = () => {
 
         setLoading(true);
         try {
-            const postsCollection = collection(db, 'posts');
-            let q; // Deklarasikan variabel query
+            let q = collection(db, 'posts');
 
-            // 1. Buat query dasar yang SELALU menyaring berdasarkan policyId
-            const baseQuery = query(
-                postsCollection, 
-                where("sourceId", "==", policyId)
-            );
+            // 1. SELALU saring berdasarkan ID kebijakan/laporan
+            q = query(q, where("sourceId", "==", policyId));
 
-            // 2. Jika ada input di search bar, tambahkan saringan keywords
-            if (searchTerm.trim() !== '') {
-                q = query(
-                    baseQuery, 
-                    where('keywords', 'array-contains', searchTerm.toLowerCase())
-                );
-            } else {
-                // 3. Jika tidak ada input, cukup urutkan berdasarkan yang terbaru
-                q = query(baseQuery, orderBy('createdAt', 'desc'));
+            // 2. JIKA ada input di search bar, tambahkan saringan keywords
+            if (searchTerm && searchTerm.trim() !== '') {
+                const searchKeywords = searchTerm.toLowerCase().split(' ').filter(word => word);
+                if (searchKeywords.length > 0) {
+                    // Gunakan array-contains-any untuk pencarian multi-kata
+                    q = query(q, where('keywords', 'array-contains-any', searchKeywords.slice(0, 10)));
+                }
             }
+
+            // 3. SELALU urutkan hasilnya berdasarkan yang terbaru di akhir
+            q = query(q, orderBy('createdAt', 'desc'));
 
             const querySnapshot = await getDocs(q);
             const postsData = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
+
             setPosts(postsData); // Asumsi kamu punya state 'posts' dan 'setPosts'
 
         } catch (error) {
@@ -145,11 +143,6 @@ const PolicyDetail = () => {
             setLoading(false);
         }
     }, [searchTerm, policyId]);
-
-    const refreshDiscussions = () => {
-        // Trik sederhana untuk refresh: ubah key di komponen list
-        // Tapi untuk sekarang, kita bisa biarkan kosong karena komponen akan refresh sendiri
-    };
 
     useEffect(() => {
         fetchPosts();
@@ -368,15 +361,12 @@ const PolicyDetail = () => {
                         <div className="space-y-4 pt-2 border-slate-200/80">
                             <PolicyDiscussionList 
                             sourceId={policy.id}
+                            searchTerm={searchTerm}
                             />
                         </div>
                     </div>
                 </div>
             </div>
-
-            
-
-            
 
             {/* Modal Voting */}
             <VotingModal 

@@ -26,15 +26,15 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
     
     setLoading(true);
     setError('');
+    
+    console.log("Memulai handleSubmit...");
+    console.log("Data yang diterima props:", { sourceType, sourceId, additionalData });
 
     try {
-      // 1. Jika pengguna memilih file, unggah terlebih dahulu
+      let fileUrl = null;
       if (file) {
         fileUrl = await uploadDiscussionFile(file, currentUser.uid);
-        if (!fileUrl) {
-          // Gagal mengunggah file, hentikan proses
-          throw new Error("Gagal mengunggah file.");
-        }
+        if (!fileUrl) throw new Error("Gagal mengunggah file.");
       }
 
       const authorInfo = isAnonymous 
@@ -70,7 +70,6 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
         discussionCount: increment(1)
       });
       
-      setFile(null);
     } catch (err) {
       console.error("Error creating discussion:", err);
       setError(err.message || "Gagal memulai diskusi.");

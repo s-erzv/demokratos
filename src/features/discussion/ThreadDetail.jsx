@@ -128,7 +128,7 @@ const handleReportClick = () => {
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
-    // 1. KONTENER INDUK: Tetap menggunakan layout full-width yang responsif.
+    
     <div className="min-h-screen ">
       <div className="max-w-7xl mx-auto ">
         
@@ -136,7 +136,7 @@ const handleReportClick = () => {
         <div className="space-y-6">
   
           {post && (
-            // 2. KARTU PERTAMA: Hanya untuk post utama.
+            
             <div className="bg-white rounded-3xl shadow-lg border border-slate-200/80">
               <div className="p-6 sm:py-8 sm:px-12">
                 
@@ -166,6 +166,16 @@ const handleReportClick = () => {
                 <div className="space-y-2">
                   <h2 className="text-xl font-bold text-slate-900 break-words">{post.question}</h2>
                   <p className="text-slate-600 leading-relaxed">{post.body}</p>
+
+                  {post.fileUrl && (
+                  <div className="mt-4">
+                    <img 
+                      src={post.fileUrl} 
+                      alt="Lampiran diskusi" 
+                      className="w-auto h-auto max-h-80 object-cover rounded-lg "
+                    />
+                  </div>
+                  )}
                 </div>
                 
                 {/* BAGIAN BAWAH: Tombol Aksi & Tombol Jawab (indentasi pl-[60px] dihilangkan) */}
@@ -216,7 +226,7 @@ const handleReportClick = () => {
                 )}
   
                 {comments.length > 0 ? (
-                  // Setiap balasan akan memiliki pemisah
+                
                   comments.map(comment => (
                     <div key={comment.id} className=" border-slate-100   last:pb-0">
                       <CommentCard comment={comment} postId={postId} />
