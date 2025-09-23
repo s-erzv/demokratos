@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout from '../components/MainLayout';
 import { useAuth } from '../hooks/AuthContext';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, orderBy, limit, doc, getDoc } from 'firebase/firestore';
-import { Users, FileText, Mic, Clock, Shield, Loader2, PlusCircle, ArrowUp, ArrowDown } from 'lucide-react';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { Users, FileText, Mic, Clock, Shield, Loader2, PlusCircle, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const CF_BASE_URL = 'https://us-central1-demokratos-5b0ce.cloudfunctions.net/'; // Untuk Cloud Functions jika diperlukan
@@ -25,12 +25,14 @@ const AdminDashboard = () => {
     const fetchAdminData = useCallback(async () => {
         setLoadingData(true);
         try {
+            
             // --- 1. MENGHITUNG TOTAL PENGGUNA ---
             const usersSnapshot = await getDocs(collection(db, 'users'));
             const totalUsers = usersSnapshot.size;
             
             // --- 2. MENGHITUNG KEBIJAKAN AKTIF (Policies) ---
             const policiesCollection = collection(db, 'policies');
+            // Catatan: Asumsi "Active" ditulis dengan huruf besar 'A'
             const activePoliciesQuery = query(policiesCollection, where('status', '==', 'Active'));
             const activePoliciesSnapshot = await getDocs(activePoliciesQuery);
             const activePoliciesCount = activePoliciesSnapshot.size;
@@ -39,29 +41,31 @@ const AdminDashboard = () => {
             const votesSnapshot = await getDocs(collection(db, 'votes'));
             const totalVotesCount = votesSnapshot.size;
 
-            // --- 4. MENGHITUNG TOTAL LAPORAN (Simulasi: Koleksi 'laporan' atau 'posts') ---
-            const reportsSnapshot = await getDocs(collection(db, 'laporan')); // Menggunakan 'laporan' sesuai screenshot Firestore
-            const totalReportsCount = reportsSnapshot.size;
+            // --- 4. MENGHITUNG TOTAL LAPORAN MASUK (Koleksi 'laporan') ---
+            const laporanSnapshot = await getDocs(collection(db, 'laporan')); 
+            const totalReportsCount = laporanSnapshot.size;
 
-            // --- 5. MENGAMBIL LAPORAN PRIORITAS (5 Policies dengan vote terbanyak) ---
+            // --- 5. MENGAMBIL LAPORAN PRIORITAS (Top 5 Policies/Vote Terbanyak) ---
             const priorityQuery = query(
                 policiesCollection,
-                orderBy('votesYes', 'desc'), // Mengurutkan berdasarkan vote Yes sebagai simulasi prioritas
+                orderBy('votesYes', 'desc'), 
                 limit(5)
             );
             const prioritySnapshot = await getDocs(priorityQuery);
 
             const fetchedPriorities = prioritySnapshot.docs.map(doc => {
                 const data = doc.data();
-                const total = data.votesYes + data.votesNo;
+                const total = (data.votesYes || 0) + (data.votesNo || 0);
                 return {
                     id: doc.id,
                     title: data.title,
-                    location: 'Jakarta Pusat', // Placeholder lokasi
+                    // Menggunakan tipe kebijakan sebagai placeholder lokasi yang relevan
+                    location: data.type === 'kebijakan' ? 'Kebijakan Publik' : 'Program Pemerintah', 
                     votesYes: data.votesYes || 0,
                     votesNo: data.votesNo || 0,
                     totalVotes: total,
                     percentageYes: total > 0 ? ((data.votesYes / total) * 100).toFixed(0) : 50,
+                    type: data.type,
                 };
             });
 
@@ -75,7 +79,7 @@ const AdminDashboard = () => {
 
         } catch (error) {
             console.error("Error fetching admin dashboard data:", error);
-            // Tetapkan stats ke 0 jika terjadi error
+            // Tetapkan stats ke 0 jika terjadi error (atau karena Permission Denied)
             setStats({ totalUsers: 0, activePolicies: 0, totalVotes: 0, totalReports: 0 });
             setPriorities([]);
         } finally {
@@ -98,23 +102,32 @@ const AdminDashboard = () => {
         );
     }
     
-    const backgroundStyle = { 
-        backgroundImage: `url('/bg-userdashboard.svg')`, 
-        backgroundPosition: 'right',
-        backgroundRepeat: 'no-repeat',
+    // Logika conditional style untuk menghilangkan background di mobile
+    // Kita gunakan inline style reaktif untuk gambar
+    const getHeaderStyle = () => {
+        const isMobile = window.innerWidth < 768; // Asumsi md: 768px
+
+        return {
+            backgroundPosition: 'right',
+            backgroundRepeat: 'no-repeat',
+            // Hanya tampilkan gambar di desktop/tablet
+            backgroundImage: isMobile ? 'none' : `url('/bg-userdashboard.svg')`,
+        };
     };
+
 
     return (
         <MainLayout>
             <div className="space-y-8">
                 
-                {/* Header: Halo, Admin! */}
+                {/* Header: Halo, Admin! - Responsif untuk Background dan Margin */}
                 <div 
                     className="bg-white rounded-xl shadow-lg p-6 sm:p-10 relative overflow-hidden border border-gray-100"
-                    style={backgroundStyle}
+                    style={getHeaderStyle()}
                 >
                     <div className="relative z-10">
-                        <p className="text-sm sm:text-base text-gray-600">Halo, {userData?.fullName || 'Admin'}</p>
+                        {/* Tambahkan mt-4 di mobile, lalu reset di sm:mt-0 */}
+                        <p className="text-sm sm:text-base text-gray-600 mt-6 sm:mt-0">Halo, {userData?.fullName || 'Admin'}</p>
                         <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-800 mt-1 mb-2">
                             Pantau laporan warga dan hasil voting secara real-time
                         </h1>
@@ -147,8 +160,8 @@ const AdminDashboard = () => {
                     
                     {/* Kolom Kiri Bawah: Grafik Perbandingan */}
                     <div className="lg:col-span-1 bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-                            Perbandingan Vote Kebijakan
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                            <BarChart3 size={20} className="mr-2 text-primary" /> Perbandingan Vote Kebijakan
                         </h2>
                         {/* Placeholder untuk CHART */}
                         <div className="flex justify-center items-center h-64 bg-gray-50 rounded-lg">
@@ -156,26 +169,26 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Kolom Kanan Bawah: Laporan Prioritas */}
+                    {/* Kolom Kanan Bawah: Laporan Prioritas (Top 5 Votes) */}
                     <div className="lg:col-span-1 bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-                            Laporan Prioritas
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                            <Clock size={20} className="mr-2 text-primary" /> Top 5 Vote Kebijakan
                         </h2>
                         <div className="space-y-4">
                             {priorities.length === 0 ? (
-                                <p className="text-gray-500 text-sm py-5 text-center">Tidak ada laporan prioritas saat ini.</p>
+                                <p className="text-gray-500 text-sm py-5 text-center">Tidak ada kebijakan prioritas saat ini.</p>
                             ) : (
                                 priorities.map((item, index) => (
                                     <div key={item.id} className="border-b pb-3 last:border-b-0 flex justify-between items-center">
-                                        <div>
-                                            <Link to={`/vote/${item.id}`} className="text-base font-semibold text-gray-800 hover:text-primary transition-colors">
+                                        <div className='flex-1 pr-4'>
+                                            <Link to={`/vote/${item.id}`} className="text-base font-semibold text-gray-800 hover:text-primary transition-colors line-clamp-1">
                                                 {item.title}
                                             </Link>
-                                            <p className="text-xs text-gray-500">{item.location || 'Lokasi tidak diketahui'}</p>
+                                            <p className="text-xs text-gray-500">{item.location}</p>
                                         </div>
                                         <div className="text-right flex items-center space-x-2">
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${item.percentageYes > 60 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {item.percentageYes}% Setuju
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${item.percentageYes > 50 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {item.percentageYes}%
                                             </span>
                                             <span className="text-sm text-gray-600">{item.totalVotes.toLocaleString('id-ID')} Suara</span>
                                         </div>
@@ -186,16 +199,6 @@ const AdminDashboard = () => {
                     </div>
                 </div>
                 
-                {/* Tombol Buat Kebijakan Baru (Akses Cepat) */}
-                <div className="fixed bottom-8 right-8 z-30">
-                    <Link 
-                        to="/create-policy" 
-                        className="flex items-center p-4 bg-primary text-white rounded-full shadow-lg hover:bg-red-700 transition-colors transform hover:scale-110"
-                        aria-label="Buat Vote Baru"
-                    >
-                        <PlusCircle size={28} />
-                    </Link>
-                </div>
             </div>
         </MainLayout>
     );
