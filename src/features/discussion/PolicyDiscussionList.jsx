@@ -60,11 +60,11 @@ const PolicyDiscussionList = ({ sourceId, searchTerm = '', refreshKey }) => {
   return (
     <div className="mt-2">
       {filteredDiscussions.length > 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="">
           {filteredDiscussions.map((post, index) => (
             <div key={post.id}>
               <PostCard post={post} onUpdate={fetchDiscussions} />
-              {index < filteredDiscussions.length - 1 && <hr className="mx-6" />}
+              {index < filteredDiscussions.length - 1 }
             </div>
           ))}
         </div>

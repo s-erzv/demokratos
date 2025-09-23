@@ -370,10 +370,13 @@ const PolicyDetail = () => {
                                 <DiscussionForm
                                     isOpen={isDiscussion}
                                     onClose={() => setIsDiscussion(false)}
-                                    sourceType="policy"
                                     sourceId={policy.id}
-                                    additionalData={{ type: policy.type }}
+                                    additionalData={{ 
+                                        sourceType: "policy", 
+                                        type: policy.type 
+                                    }}
                                     onDiscussionAdded={triggerRefresh}
+                                    sourceCollection="policies"
                                 />
                             )}
                             <div className="space-y-4 pt-6 border-slate-200/80">

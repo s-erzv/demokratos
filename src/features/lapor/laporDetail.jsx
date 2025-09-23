@@ -20,7 +20,12 @@ export default function LaporDetail(){
     const { userData } = useAuth()
     const { isAdmin, setShowStatus, search } = useLapor()
 
+    const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+
     const [laporan, setLaporan] = useState([])
+
+    const triggerRefresh = () => setRefreshKey(prevKey => prevKey + 1);
 
     async function fetchData(){
         const docRef = doc(db, `laporan/${laporanId}`);
@@ -97,7 +102,7 @@ export default function LaporDetail(){
 
     useEffect(() => {
         fetchLaporan();
-    }, [laporanId]);
+    }, [laporanId, refreshKey]);
 
     if (loading) return <p>Memuat laporan...</p>;
     if (!laporan) return <p>Laporan tidak ditemukan.</p>;
@@ -180,7 +185,7 @@ export default function LaporDetail(){
                             />
 
                             <button 
-                            type="submit"
+                            type="button"
                             disabled={!currentUser}
                             onClick={() => setIsDiscussion(true)}
                             aria-label="Kirim Aspirasi"
@@ -203,10 +208,13 @@ export default function LaporDetail(){
                             <DiscussionForm
                                 isOpen={isDiscussion}
                                 onClose={() => setIsDiscussion(false)}
-                                sourceType="laporan"
                                 sourceId={laporan.id}
-                                additionalData={{ kategori: laporan.kategori }}
-                                onDiscussionAdded={fetchLaporan} 
+                                sourceCollection="laporan"
+                                additionalData={{ 
+                                    sourceType: "laporan", 
+                                    kategori: laporan.kategori
+                                }}
+                                onDiscussionAdded={triggerRefresh}  
                             />
                         )}
                         
@@ -214,9 +222,11 @@ export default function LaporDetail(){
                             - 'pt-6' memberikan jarak atas yang lebih besar.
                             - 'border-t' menambahkan garis pemisah yang halus dan modern.
                         */}
-                        <div className="space-y-4 pt-6 border-slate-200/80">
+                        <div className="space-y-4 pt-3 border-slate-200/80">
                             <PolicyDiscussionList 
-                            sourceId={laporan.id}
+                                sourceId={laporan.id}
+                                searchTerm={searchTerm}
+                                refreshKey={refreshKey}
                             />
                         </div>
                     </div>

@@ -8,7 +8,7 @@ import { uploadDiscussionFile } from './discussionService';
 import { X } from 'lucide-react';
 
 // Komponen ini menerima props dari halaman detail kebijakan
-const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, sourceId, additionalData = {}, fileUrl ={} }) => {
+const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, sourceId, additionalData = {}, fileUrl ={}, sourceCollection }) => {
   const { currentUser, userData } = useAuth();
   const [question, setQuestion] = useState('');
   const [body, setBody] = useState('');
@@ -65,7 +65,7 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
       onClose();
 
       // 2. Update discussionCount di dokumen induk (policy atau laporan)
-      const parentDocRef = doc(db, sourceType, sourceId);
+      const parentDocRef = doc(db, sourceCollection, sourceId);
       await updateDoc(parentDocRef, {
         discussionCount: increment(1)
       });
