@@ -67,7 +67,7 @@ const ReplyDetail = () => {
                       <div className="flex items-end">
                         <button
                             onClick={() => setIsReplyFormVisible(prev => !prev)}
-                            className="bg-primary ml-auto text-white font-semibold py-2 px-5 rounded-full hover:bg-red-800 transition-colors"
+                            className="bg-primary ml-auto text-sm md:text-base text-white font-semibold py-1.5 px-4 md:py-2 md:px-5 rounded-full hover:bg-red-800 transition-colors"
                             >
                             {isReplyFormVisible ? 'Batal' : 'Jawab Komentar Ini'}
                         </button>

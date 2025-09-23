@@ -152,7 +152,7 @@ const handleReportClick = () => {
                           className="w-10 h-10 rounded-full object-cover" 
                         />
                       ) : (
-                        <UserCircle size={40} className="text-slate-400" />
+                        <UserCircle size={35} className="text-slate-400" />
                       )}
                     </div>
                     <span className="font-semibold text-slate-800">{post.authorName}</span>
@@ -198,7 +198,7 @@ const handleReportClick = () => {
                   {!isCommentFormVisible && currentUser && (
                     <button
                       onClick={() => setIsCommentFormVisible(true)}
-                      className="bg-primary ml-auto text-white font-semibold py-2 px-5 rounded-full hover:bg-red-800 transition-colors"
+                      className="bg-primary ml-auto text-sm md:text-base text-white font-semibold py-1.5 px-4 md:py-2 md:px-5 rounded-full hover:bg-red-800 transition-colors"
                     >
                       Jawab Diskusi
                     </button>
@@ -211,7 +211,7 @@ const handleReportClick = () => {
           {/* 3. KARTU KEDUA: Khusus untuk bagian balasan. */}
           <div className="bg-white rounded-3xl shadow-lg border border-slate-200/80">
             <div className="p-6 sm:py-8 sm:px-12">
-              <div className='flex gap-3'>
+              <div className='flex gap-1.5 sm:gap-3'>
                 <p className="text-sm font-bold text-slate-800 mb-5">Balasan</p>
                 <p className="text-sm font-bold text-slate-800 mb-5">{post.authorName}</p>
               </div>

@@ -4,7 +4,6 @@ import { db } from '../../firebase';
 import PostCard from './PostCard';
 import { useAuth } from '../../hooks/AuthContext';
 import AdminReportFeed from './AdminReportFeed';
-import CreatePostModal from './CreatePostModal';
 import ikonDiskusi from '../../assets/ikondiskusi.svg';
 
 
@@ -74,10 +73,10 @@ const DiscussionFeed = () => {
   
     {/* Konten Teks & Kontrol di sebelah kiri */}
     <div className="p-6 md:px-10 md:py-12">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800">
+      <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-800">
         Ruang Diskusi Publik
       </h1>
-      <p className="text-lg text-slate-600 mt-2">
+      <p className="text-sm lg:text-lg text-slate-600 mt-2">
         Temukan semua aspirasi dan diskusi terkait kebijakan dan laporan warga.
       </p>
 
@@ -95,7 +94,7 @@ const DiscussionFeed = () => {
           <input
             type="text"
             placeholder="Telusuri topik diskusi..."
-            className="w-full border border-gray-300 rounded-full py-2.5 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-150"
+            className="w-full border border-gray-300 rounded-full py-1.5 md:py-2.5 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-150"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -105,7 +104,7 @@ const DiscussionFeed = () => {
         <div className="relative">
           <button 
             onClick={() => setIsFilterOpen(prev => !prev)}
-            className="w-full md:w-auto bg-primary text-white font-semibold py-2.5 px-6 rounded-full flex items-center justify-center hover:bg-red-800 transition-colors"
+            className="w-full md:w-auto bg-primary text-white font-semibold py-1.5 md:py-2.5 px-6 rounded-full flex items-center justify-center hover:bg-red-800 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="4" x2="4" y1="21" y2="14"></line><line x1="4" x2="4" y1="10" y2="3"></line><line x1="12" x2="12" y1="21" y2="12"></line><line x1="12" x2="12" y1="8" y2="3"></line><line x1="20" x2="20" y1="21" y2="16"></line><line x1="20"x2="20" y1="12" y2="3"></line><line x1="1" x2="7" y1="14"></line><line x1="9" x2="15" y1="8"></line><line x1="17" x2="23" y1="16"></line></svg>
             <span>{filter ? filterDisplayNames[filter] : 'Filter'}</span>
@@ -160,7 +159,7 @@ const DiscussionFeed = () => {
     ) : posts.length > 0 ? (
 
       // Inilah kontainer utamanya: satu kartu putih dengan shadow dan sudut membulat.
-      <div className="bg-white px-10 rounded-3xl shadow-lg border border-slate-200/80">
+      <div className="bg-white sm:px-4 md:px-10 rounded-3xl shadow-lg border border-slate-200/80">
         {posts.map((post) => (
           // Setiap post dibungkus div dengan garis bawah (border-b).
           // 'last:border-b-0' adalah trik untuk menghilangkan garis pada item terakhir.

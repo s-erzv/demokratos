@@ -1,58 +1,119 @@
-// src/components/features/discussion/ReportedPostCard.jsx
-
 import { formatTimeAgo } from "../../utils/formatters";
+import { UserCircle } from "lucide-react";
+import ConfirmationModal from "../../components/styling/confirmationModal";
+import { useState } from "react";
 
-const ReportedPostCard = ({ report, onActionTaken }) => {
+const ReportedPostCard = ({ report, onActionTaken}) => {
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    confirmText: ''
+  });
+  const [loadingAction, setLoadingAction] = useState(false);
 
-  // Nanti, kita akan isi logika untuk fungsi-fungsi ini
-  const handleDeletePost = async () => {
-    if (window.confirm("Anda yakin ingin menghapus post ini? Aksi ini tidak bisa dibatalkan.")) {
-      console.log("Menghapus post:", report.postId);
-      // Panggil fungsi service untuk hapus post & laporan
-      // onActionTaken(); // Refresh daftar laporan
-    }
+  // Fungsi yang akan dijalankan saat admin konfirmasi HAPUS POST
+  const confirmDeletePost = async () => {
+    setLoadingAction(true);
+    console.log("Menghapus post:", report.postId);
+    // await deletePost(report.postId); // Panggil Cloud Function
+    if (onActionTaken) onActionTaken();
+    setModalState({ isOpen: false }); // Tutup modal
+    setLoadingAction(false);
   };
 
-  const handleDismissReport = async () => {
-    if (window.confirm("Anda yakin ingin mengabaikan laporan ini?")) {
-      console.log("Mengabaikan laporan:", report.id);
-      // Panggil fungsi service untuk update status laporan
-      // onActionTaken(); // Refresh daftar laporan
-    }
+  // Fungsi yang akan dijalankan saat admin konfirmasi ABAIKAN LAPORAN
+  const confirmDismissReport = async () => {
+    setLoadingAction(true);
+    console.log("Mengabaikan laporan:", report.id);
+    // await dismissReport(report.id); // Panggil Cloud Function
+    if (onActionTaken) onActionTaken();
+    setModalState({ isOpen: false }); // Tutup modal
+    setLoadingAction(false);
+  };
+  
+  // Handler ini sekarang HANYA menampilkan modal untuk hapus post
+  const handleDeletePost = () => {
+    setModalState({
+      isOpen: true,
+      title: "Hapus Postingan Ini?",
+      message: "Aksi ini akan menghapus postingan secara permanen. Semua komentar dan data terkait akan hilang.",
+      onConfirm: confirmDeletePost,
+      confirmText: "Ya, Hapus Post"
+    });
+  };
+
+  // Handler ini sekarang HANYA menampilkan modal untuk abaikan laporan
+  const handleDismissReport = () => {
+    setModalState({
+      isOpen: true,
+      title: "Abaikan Laporan Ini?",
+      message: "Laporan ini akan dihapus dari daftar dan dianggap selesai. Postingan asli tidak akan terpengaruh.",
+      onConfirm: confirmDismissReport,
+      confirmText: "Ya, Abaikan"
+    });
   };
 
   return (
+    <>
     <div className="bg-yellow-50 border border-yellow-300 p-4 rounded-lg animate-fade-in">
-      <div className="flex justify-between items-start text-xs text-yellow-800 mb-2">
+      <div className="flex justify-between items-start text-xs text-yellow-800 mb-3">
         <p>
-          Dilaporkan oleh **{report.reporterName}** <br/>
+          Dilaporkan oleh {report.reporterName} <br/>
           Karena: <span className="font-bold">{report.reason}</span>
         </p>
         <span className="flex-shrink-0">{formatTimeAgo(report.createdAt)}</span>
       </div>
-
-      {/* Konten post yang dilaporkan */}
-      <div className="bg-white p-4 rounded-md border">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="font-semibold">{report.reportedPostAuthorName}</span>
-          {report.isPostAnonymous && (
-            <span className="text-xs bg-gray-200 px-2 py-0.5 rounded-full">Aslinya Anonim</span>
+  
+      <div className="bg-red-200/40 p-3 sm:p-4 rounded-md border border-red-500 space-y-2">
+        
+        {/* Info Penulis Post */}
+        <div className="flex items-center gap-2">
+          {report.reportedPostAuthorPhotoURL ? (
+              <img 
+                src={report.reportedPostAuthorPhotoURL} 
+                alt={report.reportedPostAuthorName} 
+                className="w-6 h-6 rounded-full object-cover" 
+              />
+            ) : (
+              <UserCircle size={24} className="text-yellow-700/80" />
           )}
+          <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm text-yellow-900">{report.reportedPostAuthorName}</span>
+              {report.isPostAnonymous && (
+                <span className="text-xs bg-yellow-200/80 text-yellow-900 px-2 py-0.5 rounded-full font-medium">Aslinya Anonim</span>
+              )}
+          </div>
         </div>
-        <h4 className="font-bold text-gray-800">{report.postQuestion}</h4>
-        <p className="text-sm text-gray-600 line-clamp-2">{report.postBody}</p>
+        
+        {/* Isi Postingan yang Dilaporkan */}
+        <div className="pl-8"> {/* Diberi indentasi agar lurus dengan nama */}
+          <h4 className="font-bold text-yellow-900">{report.postQuestion}</h4>
+          <p className="text-sm text-yellow-800/90 line-clamp-2">{report.postBody}</p>
+        </div>
       </div>
-
-      {/* Tombol Aksi untuk Admin */}
-      <div className="flex gap-2 mt-3">
-        <button onClick={handleDeletePost} className="text-xs bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700">
+  
+      <div className="flex gap-3 mt-3">
+        <button onClick={handleDeletePost} disabled={loadingAction} className="text-xs font-bold bg-red-600 text-white px-4 py-1.5 rounded-full hover:bg-red-700 transition-colors">
           Hapus Post
         </button>
-        <button onClick={handleDismissReport} className="text-xs bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600">
+        <button onClick={handleDismissReport} disabled={loadingAction} className="text-xs font-semibold bg-slate-500 text-white px-4 py-1.5 rounded-full hover:bg-slate-600 transition-colors">
           Abaikan Laporan
         </button>
       </div>
     </div>
+
+    <ConfirmationModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        confirmText={modalState.confirmText}
+        loading={loadingAction}
+    />
+    </>
   );
 };
 

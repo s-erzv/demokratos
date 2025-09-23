@@ -336,7 +336,7 @@ const PolicyDetail = () => {
                         </div>
                     ) : (
                         <div className="bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
-                            <div className="space-y-2">
+                            <div className="space-y-2 pt-4 px-4 md:p-0">
                                 <h2 className="text-xl font-bold text-slate-900">
                                     Ruang Aspirasi Warga
                                 </h2>
@@ -362,10 +362,12 @@ const PolicyDetail = () => {
                                         className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm flex-shrink-0 px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 ease-in-out transform hover:scale-105 disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
                                     >
                                         <Send size={18} />
-                                        <span>Berikan Aspirasi</span>
+                                        <span>Buat</span>
                                     </button>
                                 </div>
                             </div>
+                            <hr className=''/>
+
                             {policy && isDiscussion && (
                                 <DiscussionForm
                                     isOpen={isDiscussion}
@@ -379,7 +381,7 @@ const PolicyDetail = () => {
                                     sourceCollection="policies"
                                 />
                             )}
-                            <div className="space-y-4 pt-6 border-slate-200/80">
+                            <div className="space-y-4 pt- border-slate-200/80">
                             
                                 <PolicyDiscussionList
                                     sourceId={policy.id}

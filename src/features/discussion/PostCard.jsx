@@ -3,13 +3,12 @@ import { useAuth } from '../../hooks/AuthContext';
 import { toggleLikePost } from './discussionService';
 import { reportPost } from './discussionService';
 import { formatTimeAgo } from '../../utils/formatters';
-import { Heart, MessageCircle, Flag, UserCircle } from 'lucide-react';
+import { Heart, MessageCircle, Flag, UserCircle, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ReportModal from './ReportModal';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import CreateCommentForm from './CreateCommentForm';
-import { Trash2 } from 'lucide-react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import ConfirmationModal from '../../components/styling/confirmationModal';
 
@@ -228,7 +227,7 @@ const PostCard = ({ post, onUpdate }) => {
 
           {isAdmin && (
             <button onClick={handleDeleteClick} className="flex items-center gap-2  hover:text-red-700">
-              <Trash2 size={20} />
+              <Trash2 size={16} />
             </button>
           )}
         </div>

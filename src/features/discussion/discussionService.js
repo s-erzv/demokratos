@@ -1,8 +1,9 @@
 // src/components/features/discussion/discussionService.js
 
-import { doc, runTransaction, collection, getDoc, setDoc, increment, deleteDoc, writeBatch } from "firebase/firestore";
+import { doc, runTransaction, collection, getDoc, setDoc, increment, deleteDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase"
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 /**
  * Mengelola logika like/unlike untuk sebuah post.
@@ -45,41 +46,36 @@ export const reportPost = async (post, currentUserData, reason) => {
   if (!post || !currentUserData || !reason) return false;
 
   const { uid: reporterId, fullName: reporterName } = currentUserData;
-  const { id: postId, authorId: reportedPostAuthorId } = post;
-
-
-
-  const reportRef = doc(db, 'posts', postId, 'reports', reporterId);
-  const reportDoc = await getDoc(reportRef);
-
-  if (reportDoc.exists()) {
-    console.log("User has already reported this post.");
-    return false;
-  }
+  const { id: postId, authorId: reportedPostAuthorId, authorName, isAnonymous, question, body } = post;
+  
+  const reportCheckRef = doc(db, 'posts', postId, 'reports', reporterId);
+  const newReportRef = doc(collection(db, 'reports'));
 
   try {
-    // 1. Tetap tandai di sub-koleksi untuk mencegah lapor dua kali
-    await setDoc(reportRef, { reportedAt: serverTimestamp(), reason });
-    
-    // 2. BUAT DOKUMEN BARU DI KOLEKSI /reports UNTUK ADMIN
-    const newReportRef = doc(collection(db, 'reports'));
-    await setDoc(newReportRef, {
-      postId,
-      postQuestion: post.question,
-      postBody: post.body,
-      reportedPostAuthorId,
-      reportedPostAuthorName: post.authorName, // Nama asli (atau "Anonim")
-      isPostAnonymous: post.isAnonymous,
-      reporterId,
-      reporterName,
-      reason,
-      status: "pending",
-      createdAt: serverTimestamp(),
-    });
+    await runTransaction(db, async (transaction) => {
+      const reportCheckDoc = await transaction.get(reportCheckRef);
+      if (reportCheckDoc.exists()) {
+        throw new Error("User has already reported this post.");
+      }
 
+      // 1. Tandai bahwa user ini sudah melapor
+      // 'serverTimestamp' sekarang sudah dikenali
+      transaction.set(reportCheckRef, { reportedAt: serverTimestamp(), reason });
+
+      // 2. Buat dokumen laporan baru untuk admin
+      transaction.set(newReportRef, {
+        postId, postQuestion: question, postBody: body,
+        reportedPostAuthorId, reportedPostAuthorName: authorName, reportedPostAuthorPhotoURL: authorPhotoURL || null,
+        isPostAnonymous: isAnonymous || false,
+        reporterId, reporterName,
+        reason, status: "pending",
+        createdAt: serverTimestamp(), // 'serverTimestamp' sekarang sudah dikenali
+      });
+    });
+    
     return true;
   } catch (error) {
-    console.error("Failed to report post: ", error);
+    console.error("Failed to report post:", error); // <-- Ini yang memunculkan error di console
     return false;
   }
 };

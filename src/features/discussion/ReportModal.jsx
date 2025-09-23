@@ -1,5 +1,3 @@
-// src/components/features/discussion/ReportModal.jsx
-
 import { useState } from 'react';
 import { useAuth } from '../../hooks/AuthContext';
 import { reportPost } from './discussionService';
