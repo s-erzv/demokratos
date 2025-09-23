@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 export default function LaporList({kategori}){
     const navigate = useNavigate()
 
-    const { isAdmin, search, filter } = useLapor()
+    const { isAdmin, search, filter, refreshLaporan } = useLapor()
     const { userData } = useAuth()
 
     const [data, setData] = useState([])
@@ -39,6 +39,8 @@ export default function LaporList({kategori}){
             }));
 
             setData(laporanData);
+
+            console.log(laporanData)
         } catch (error) {
             console.error(error)
         }
@@ -46,7 +48,7 @@ export default function LaporList({kategori}){
 
     useEffect(() => {
         fetchLaporan()
-    }, [])
+    }, [refreshLaporan])
 
     useEffect(() => {
         let result = data

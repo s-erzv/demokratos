@@ -12,6 +12,8 @@ export const LaporProvider = ({ children }) => {
 
     const isAdmin = userData?.role === "admin"
 
+    const [refreshLaporan, setRefreshLaporan] = useState(0)
+
     const [search, setSearch] = useState("")
     const [filter, setFilter] = useState("")
 
@@ -61,6 +63,7 @@ export const LaporProvider = ({ children }) => {
                 console.log("Laporan berhasil dibuat")
                 setShow(false)
                 resetForm()
+                setRefreshLaporan(refreshLaporan + 1)
             } catch (error) {
                 console.error(error);
             }
@@ -106,7 +109,7 @@ export const LaporProvider = ({ children }) => {
     }
 
     return(
-        <LaporContext.Provider value={{ show, showAnalisis, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, showAnalisis, refreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )
