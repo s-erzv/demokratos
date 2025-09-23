@@ -372,21 +372,21 @@ exports.getSentimentAnalysis = functions.https.onRequest((req, res) => {
             const reasonsText = votesData.reasons.map(r => `[${r.choice.toUpperCase()}]: ${r.reason}`).join('\n');
 
              const aiPrompt = `
-Lakukan analisis sentimen singkat dan padat untuk kebijakan: "${policyData.title}" berdasarkan data berikut.
+                Lakukan analisis sentimen singkat dan padat untuk kebijakan: "${policyData.title}" berdasarkan data berikut.
 
-DATA INPUT:
-Sentimen Mayoritas: ${primarySentiment} (${primaryPercentage}%)
-Total Setuju: ${votesData.yes}
-Total Tidak Setuju: ${votesData.no}
-Aspirasi Utama: ${reasonsText.length > 0 ? reasonsText : 'Tidak ada alasan tambahan yang dicatat.'}
+                DATA INPUT:
+                Sentimen Mayoritas: ${primarySentiment} (${primaryPercentage}%)
+                Total Setuju: ${votesData.yes}
+                Total Tidak Setuju: ${votesData.no}
+                Aspirasi Utama: ${reasonsText.length > 0 ? reasonsText : 'Tidak ada alasan tambahan yang dicatat.'}
 
-TUGAS:
-Hasilkan SATU paragraf teks dalam Bahasa Indonesia. Teks ini harus:
-1. Ringkas dan lugas (Maksimal 10 kalimat).
-2. Mencakup kesimpulan sentimen mayoritas dan dua (maksimal) tema alasan utama.
-3. Ditutup dengan satu kalimat rekomendasi/aksi singkat.
-4. Dilarang keras menggunakan karakter Markdown seperti *, #, -, :, kurung siku, atau new line ganda. Output harus berupa plain text satu paragraf.
-`;
+                TUGAS:
+                Hasilkan SATU paragraf teks dalam Bahasa Indonesia. Teks ini harus:
+                1. Ringkas dan lugas (Maksimal 10 kalimat).
+                2. Mencakup kesimpulan sentimen mayoritas dan dua (maksimal) tema alasan utama.
+                3. Ditutup dengan satu kalimat rekomendasi/aksi singkat.
+                4. Dilarang keras menggunakan karakter Markdown seperti *, #, -, :, kurung siku, atau new line ganda. Output harus berupa plain text satu paragraf.
+                `;
 
             // 4. Panggil Gemini API
             const geminiResponse = await ai.models.generateContent({
