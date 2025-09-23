@@ -6,9 +6,9 @@ import { useAuth } from '../../../hooks/AuthContext';
 import { db } from '../../../firebase';
 import { CircleX } from 'lucide-react';
 
-export default function ContentLengkap({ kategori }) {
+export default function ContentLengkap( ) {
     // State dari context untuk search dan filter
-    const { search, filter, setFilter } = useLapor();
+    const { search, filter, setFilter, sort, setSort } = useLapor();
     const { userData } = useAuth();
 
     // State Internal Komponen
@@ -26,14 +26,13 @@ export default function ContentLengkap({ kategori }) {
                 const laporanRef = collection(db, "laporan");
                 let q = query(laporanRef);
 
-                if (kategori === 'Terpopuler') {
+                if (sort === 'Terpopuler') {
                     q = query(q, orderBy("pendukung", "desc"));
-                } else if (kategori === 'Terbaru') {
+                } else if (sort === 'Terbaru') {
                     q = query(q, orderBy("createdAt", "desc"));
-                } else if (kategori === 'Laporan Anda' && userData) {
+                } else if (sort === 'Laporan Anda' && userData) {
                     q = query(q, where("authorId", "==", userData.uid));
                 }
-                // Anda bisa menambahkan else untuk kategori lain di sini jika perlu
                 
                 const querySnapshot = await getDocs(q);
                 const laporanData = querySnapshot.docs.map(doc => ({
@@ -49,7 +48,7 @@ export default function ContentLengkap({ kategori }) {
             }
         };
         fetchLaporan();
-    }, [kategori, userData]);
+    }, [sort, userData]);
 
     // 2. useEffect untuk menerapkan filter dan search di sisi klien
     useEffect(() => {
@@ -81,9 +80,10 @@ export default function ContentLengkap({ kategori }) {
 
     return (
         <div className="w-full">
-            <div className={`${filter ? " " : "hidden"} flex flex-row p-2 gap-1  w-fit items-center`}>
+            <div className={`${filter || sort ? " " : "hidden"} flex flex-row p-2 gap-1  w-fit items-center`}>
                 <p>Kategori: </p>
-                <button onClick={() => setFilter("")} className="flex flex-row gap-2 items-center text-white bg-primary p-1 px-3">{filter}<CircleX size={20}/></button>
+                <button onClick={() => setFilter("")} className={`${filter ? "" : "hidden"} flex flex-row gap-2 items-center text-white bg-primary p-1 px-3`}>{filter}<CircleX size={20}/></button>
+                <button onClick={() => setSort("")} className={`${sort ? "" : "hidden"} flex flex-row gap-2 items-center text-white bg-primary p-1 px-3`}>{sort}<CircleX size={20}/></button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-2">

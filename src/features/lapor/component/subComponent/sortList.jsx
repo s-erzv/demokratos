@@ -1,7 +1,7 @@
 import { useLapor } from "../../hooks/useLapor"
 
-export default function FilterList({seeMore, setSeeMore}){
-    const { setFilter } = useLapor()
+export default function SortList({seeMore, setSeeMore}){
+    const { setSort } = useLapor()
 
     return(
         <div
@@ -11,27 +11,21 @@ export default function FilterList({seeMore, setSeeMore}){
         >
             <button
             className=" bg-primary py-2 px-4 rounded-xl"
-            onClick={() => { setFilter("Infrastruktur"), setSeeMore(false)}}
+            onClick={() => { setSort("Terpopuler"), setSeeMore(false)}}
             >
-                Infrakstruktur
+                Terpopuler
             </button>
             <button
             className=" bg-primary py-2 px-4 rounded-xl"
-            onClick={() => { setFilter("Kesehatan"), setSeeMore(false)}}
+            onClick={() => { setSort("Terbaru"), setSeeMore(false)}}
             >
-                Kesehatan
+                Terbaru
             </button>
             <button
             className="bg-primary py-2 px-4 rounded-xl"
-            onClick={() => { setFilter("Pendidikan"), setSeeMore(false)}}
+            onClick={() => { setSort("Laporan Anda"), setSeeMore(false)}}
             >
-                Pendidikan
-            </button>
-            <button
-            className="bg-primary py-2 px-4 rounded-xl"
-            onClick={() => { setFilter("Lainnya"), setSeeMore(false)}}
-            >
-                Lainnya
+                Laporan Anda
             </button>
         </div>
     )

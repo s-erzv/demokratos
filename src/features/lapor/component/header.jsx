@@ -2,11 +2,13 @@ import { ChevronDown, Search } from "lucide-react";
 import { useLapor } from "../hooks/useLapor";
 import FilterList from "./subComponent/filterList";
 import { useState } from "react";
+import SortList from "./subComponent/sortList";
 
-export default function Header(){
+export default function Header({sort}){
     const { setShow, isAdmin, setSearch, search} = useLapor()
 
     const [showFilter, setShowFilter] = useState(false)
+    const [showSort, setShowSort] = useState(false)
 
     return(
         <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative mb-10">
@@ -43,6 +45,13 @@ export default function Header(){
                                 <ChevronDown />
                             </button>
                             <FilterList seeMore={showFilter} setSeeMore={setShowFilter}/>
+                        </div>
+                        <div className={`${sort ? "" : "hidden"} flex flex-col relative`}>
+                            <button onClick={() => setShowSort(prev => !prev)} className="bg-secondary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
+                                Sort
+                                <ChevronDown />
+                            </button>
+                            <SortList seeMore={showSort} setSeeMore={setShowSort}/>
                         </div>
                         <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors h-fit`}>
                             Lapor

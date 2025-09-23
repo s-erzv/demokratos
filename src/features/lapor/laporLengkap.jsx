@@ -6,7 +6,7 @@ import LaporModel from "./component/laporModel";
 export default function LaporLengkap(){
     return(
         <>
-            <Header/>
+            <Header sort={true}/>
             <ContentLengkap/>
             <LaporModel/>
         </>
