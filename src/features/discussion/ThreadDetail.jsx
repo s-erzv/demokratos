@@ -163,13 +163,13 @@ const handleReportClick = () => {
                 </div>
 
                 {/* BAGIAN TENGAH: Badge, Judul, dan Body (indentasi pl-[60px] dihilangkan) */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <h2 className="text-xl font-bold text-slate-900 break-words">{post.question}</h2>
                   <p className="text-slate-600 leading-relaxed">{post.body}</p>
                 </div>
                 
                 {/* BAGIAN BAWAH: Tombol Aksi & Tombol Jawab (indentasi pl-[60px] dihilangkan) */}
-                <div className="mt-1 flex justify-between items-center">
+                <div className="mt-3 flex justify-between items-center">
                   {/* Kiri: Suka, Jumlah Balasan */}
                   <div className="flex items-center gap-6 text-slate-500">
                     <button onClick={handleLikeClick} disabled={!currentUser || isLiking} className="flex items-center gap-2 text-sm hover:text-red-500 transition-colors disabled:opacity-50">
@@ -201,7 +201,11 @@ const handleReportClick = () => {
           {/* 3. KARTU KEDUA: Khusus untuk bagian balasan. */}
           <div className="bg-white rounded-3xl shadow-lg border border-slate-200/80">
             <div className="p-6 sm:py-8 sm:px-12">
-              <p className="text-sm font-bold text-slate-800 mb-5">Balasan </p>
+              <div className='flex gap-3'>
+                <p className="text-sm font-bold text-slate-800 mb-5">Balasan</p>
+                <p className="text-sm font-bold text-slate-800 mb-5">{post.authorName}</p>
+              </div>
+              
   
               <div className="space-y-6">
                 {isCommentFormVisible && (

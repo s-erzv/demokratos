@@ -5,6 +5,8 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/AuthContext';
 
+// kayaknya ini tidak di gunakan deh 
+
 const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
   const { currentUser, userData } = useAuth(); // Gunakan AuthContext!
   
