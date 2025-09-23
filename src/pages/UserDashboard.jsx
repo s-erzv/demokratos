@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/AuthContext';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, orderBy, count } from 'firebase/firestore'; // Import count
 import { Filter, Loader2 } from 'lucide-react';
+import LaporList from '../features/lapor/component/subComponent/laporList';
  
 const UserReportCard = ({ children }) => (
     <div className="overflow-x-auto whitespace-nowrap pb-4" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
@@ -150,6 +151,7 @@ const UserDashboard = () => {
                             Filter
                         </button>
                     </div>
+                    <LaporList kategori={"Laporan Anda"}/>
                     
                     {loadingReports ? (
                         <div className="flex justify-center py-10">
