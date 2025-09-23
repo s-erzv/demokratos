@@ -7,7 +7,6 @@ import { Loader2, Users, Download, ThumbsUp, ThumbsDown, Send, ArrowLeft, Bot, S
 import VotingModal from '../components/VotingModal';
 import { useVoting } from '../hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
-import PolicyDiscussion from '../features/discussion/DiscussionForm';
 import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
 import DiscussionForm from '../features/discussion/DiscussionForm';
 
@@ -158,8 +157,7 @@ const PolicyDetail = () => {
 
     useEffect(() => {
         fetchPolicyData();
-        fetchPosts();
-    }, [fetchPolicyData, fetchPosts]);
+    }, [fetchPolicyData]);
 
 
     if (loading || loadingVote) {
@@ -184,8 +182,7 @@ const PolicyDetail = () => {
             </MainLayout>
         );
     }
-    
-    // Perbaikan utama ada di sini
+     
     if (!policy) {
         return (
             <MainLayout>
@@ -221,8 +218,8 @@ const PolicyDetail = () => {
 
     return (
         <MainLayout>
-            <div className="mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center justify-center">
+                <div className="lg:col-span-2 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl scrollbar-hide">
                     <div className="bg-white p-6 rounded-xl shadow-lg">
                         <div className="h-56 w-full rounded-xl overflow-hidden shadow-lg relative">
                             <button
@@ -261,7 +258,7 @@ const PolicyDetail = () => {
                     </div>
                 </div>
 
-                <div className="lg:col-span-1 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl">
+                <div className="lg:col-span-1 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl scrollbar-hide">
                     <div className="bg-white p-6 rounded-xl shadow-lg text-center">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Hasil Voting Sementara</h2>
                         <div className="flex justify-center items-center h-32 w-32 mx-auto relative mb-6">
@@ -327,120 +324,69 @@ const PolicyDetail = () => {
                             )}
                         </div>
                     ) : (
-                        <div className="bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
+                        <div className="bg-white p-8 md:p-8 rounded-2xl shadow-lg space-y-6">
+ 
                             <div className="space-y-2">
-                                <h2 className="text-xl font-bold text-slate-900">
-                                    Ruang Aspirasi Warga
+                                <h2 className="text-xl  font-bold text-slate-900">
+                                Ruang Aspirasi Warga
                                 </h2>
                                 <p className="text-slate-500 text-xs">
-                                    Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
+                                Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
                                 </p>
-                                <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                                    <div className="relative w-full">
-                                        <input
-                                            type="text"
-                                            placeholder="Tuliskan aspirasi atau cari topik diskusi..."
-                                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-gray-300 text-slate-800 placeholder-slate-400 rounded-full focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent transition duration-300 ease-in-out text-sm"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        disabled={!currentUser}
-                                        onClick={() => setIsDiscussion(true)}
-                                        aria-label="Kirim Aspirasi"
-                                        className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm flex-shrink-0 px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 ease-in-out transform hover:scale-105 disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
-                                    >
-                                        <Send size={18} />
-                                        <span>Berikan Aspirasi</span>
-                                    </button>
-                                </div>
                             </div>
+                             
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <input 
+                                type="text" 
+                                placeholder="Tuliskan aspirasi atau cari topik diskusi..." 
+                                className="
+                                    w-full px-4 py-2 bg-slate-50 border border-red-800 text-slate-800
+                                    placeholder-slate-400 rounded-full
+                                    focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
+                                    transition duration-300 ease-in-out
+                                "
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+
+                                <button 
+                                type="submit"
+                                disabled={!currentUser}
+                                onClick={() => setIsDiscussion(true)}
+                                aria-label="Kirim Aspirasi"
+                                className="
+                                    flex items-center justify-center gap-2 w-full sm:w-auto text-xs flex-shrink-0
+                                    px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md
+                                    hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                                    transition-all duration-300 ease-in-out transform hover:scale-105
+                                    disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+                                "
+                                >
+                                <span>Berikan Aspirasi</span>
+                                </button>
+                            </div>
+                             
                             {policy && isDiscussion && (
-                                <PolicyDiscussion
+                                <DiscussionForm
                                     isOpen={isDiscussion}
                                     onClose={() => setIsDiscussion(false)}
-                                    onPostCreated={handleRefetch}
-                                    policyId={policy.id}
-                                    policyType={policy.type}
+                                    onPostCreated={fetchPosts} 
+                                    sourceType="policy"
+                                    sourceId={policy.id}
+                                    additionalData={{ type: policy.type }}
                                 />
                             )}
+                             
                             <div className="space-y-4 pt-6 border-slate-200/80">
-                                <PolicyDiscussionList
-                                    policyId={policy.id}
+                                <PolicyDiscussionList 
+                                sourceId={policy.id}
                                 />
                             </div>
                         </div>
-                    )}
-                    {/* === AKHIR KARTU ANALISIS SENTIMEN DISPLAY === */}
+                    )} 
+                     
                     
-                    {/* Ruang Aspirasi Warga (Comments Section) */}
-                    
-                    <div className="bg-white py- px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
-
-                        {/* Bagian Judul */}
-                        <div className="space-y-2">
-                            <h2 className="text-xl  font-bold text-slate-900">
-                            Ruang Aspirasi Warga
-                            </h2>
-                            <p className="text-slate-500 text-xs">
-                            Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
-                            </p>
-                        </div>
-                        
-                        {/* Form Input & Tombol */}
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <input 
-                            type="text" 
-                            placeholder="Tuliskan aspirasi atau cari topik diskusi..." 
-                            className="
-                                w-full px-4 py-2 bg-slate-50 border border-red-800 text-slate-800
-                                placeholder-slate-400 rounded-full
-                                focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
-                                transition duration-300 ease-in-out
-                            "
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-
-                            <button 
-                            type="submit"
-                            disabled={!currentUser}
-                            onClick={() => setIsDiscussion(true)}
-                            aria-label="Kirim Aspirasi"
-                            className="
-                                flex items-center justify-center gap-2 w-full sm:w-auto text-xs flex-shrink-0
-                                px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md
-                                hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-                                transition-all duration-300 ease-in-out transform hover:scale-105
-                                disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
-                            "
-                            >
-                            <span>Berikan Aspirasi</span>
-                            </button>
-                        </div>
-                        
-                        {/* Bagian untuk menampilkan form diskusi (Modal/Component) */}
-                        {policy && isDiscussion && (
-                            <DiscussionForm
-                                isOpen={isDiscussion}
-                                onClose={() => setIsDiscussion(false)}
-                                onPostCreated={fetchPosts} 
-                                sourceType="policy"
-                                sourceId={policy.id}
-                                additionalData={{ type: policy.type }}
-                            />
-                        )}
-                        
-                        {/* Daftar Diskusi */}
-                        <div className="space-y-4 pt-6 border-slate-200/80">
-                            <PolicyDiscussionList 
-                            sourceId={policy.id}
-                            />
-                        </div>
-                    </div>
+                   
                 </div>
             </div>
             <VotingModal
