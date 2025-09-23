@@ -10,8 +10,8 @@ export default function LaporModel(){
     return(
         <div  className="h-screen w-full z-40 fixed inset-0">
             <div onClick={() => {setShow(false), resetForm()}} className="h-full w-full absolute bg-black opacity-50 z-10 backdrop-blur-sm"></div>
-            <div className="h-full w-full flex items-center justify-center px-80 py-10">
-                <div className="h-full w-full bg-white rounded-2xl flex flex-col items-center justify-evenly p-10 z-20">
+            <div className="h-full w-full flex items-center justify-center">
+                <div className="h-fit w-fit gap-5 bg-white rounded-2xl flex flex-col items-center justify-evenly p-10 z-20">
                     <div className="w-full flex flex-col gap-1 items-center">
                         <h1 className="text-3xl font-bold">Buat Laporan</h1>
                         <p className="text-lg text-gray-500 font-thin">Laporkan masalah infrastruktur atau layanan publik agar segera ditindaklanjuti.</p>

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, db, storage } from "../../../firebase";
-import { addDoc, collection, doc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { auth, db, LaporanModel, storage } from "../../../firebase";
+import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useAuth } from "../../../hooks/AuthContext";
 
@@ -11,6 +11,8 @@ export const LaporProvider = ({ children }) => {
     const { userData } = useAuth()
 
     const isAdmin = userData?.role === "admin"
+
+    const [refreshLaporan, setRefreshLaporan] = useState(0)
 
     const [search, setSearch] = useState("")
     const [filter, setFilter] = useState("")
@@ -61,6 +63,7 @@ export const LaporProvider = ({ children }) => {
                 console.log("Laporan berhasil dibuat")
                 setShow(false)
                 resetForm()
+                setRefreshLaporan(refreshLaporan + 1)
             } catch (error) {
                 console.error(error);
             }
@@ -77,8 +80,36 @@ export const LaporProvider = ({ children }) => {
         setAlamat("")
     }
 
+    const [currentDiskusi, setCurrentDiskusi] = useState([])
+    const [hasilLaporAnalisis, setHasillaporAnalisis] = useState("")
+    const [showAnalisis, setShowAnalisis] = useState(false)
+
+    async function fetchDiskusi(LaporanId){
+        const q = query(collection(db, "posts"), where("sourceId", "==", LaporanId))
+        const querySnapshot = await getDocs(q)
+        const diskusiData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }))
+        console.log(diskusiData)
+        setCurrentDiskusi(diskusiData)
+    }
+
+    async function analisisLaporan(){
+        const data = JSON.stringify(currentDiskusi)
+
+        const prompt = `Coba berikan analisis berdasarkan data diskusi berikut ini: ${data}`
+
+        const result = await LaporanModel.generateContent(prompt)
+
+        const response = result.response
+        const text = response.text()
+        setHasillaporAnalisis(text)
+        setShowAnalisis(true)
+    }
+
     return(
-        <LaporContext.Provider value={{ show, setShow, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, showAnalisis, refreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )
