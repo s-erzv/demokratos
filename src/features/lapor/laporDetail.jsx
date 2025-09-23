@@ -161,6 +161,7 @@ export default function LaporDetail(){
                     </div>
                 :
                     <>
+                    <div className="pt-4 px-5 md:pt-0 md:px-0 space-y-4">
                         {/* Bagian Judul */}
                         <div className="space-y-2">
                             <h2 className="text-xl font-bold text-slate-900">
@@ -177,7 +178,7 @@ export default function LaporDetail(){
                                 type="text" 
                                 placeholder="Pilih topik laporan terkini" 
                                 className="
-                                    w-full px-4 py-2 bg-slate-50 border border-red-800 text-slate-800
+                                    w-full px-4 py-1 md:py-2 bg-slate-50 border border-red-800 text-slate-800
                                     placeholder-slate-400 rounded-full
                                     focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
                                     transition duration-300 ease-in-out
@@ -202,6 +203,7 @@ export default function LaporDetail(){
                                 <span>Berikan Aspirasi</span>
                             </button>
                         </div>
+                    </div>
                     </>
                 }
             
