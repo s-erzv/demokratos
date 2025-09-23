@@ -4,6 +4,8 @@ import { doc, getDoc, increment, updateDoc, writeBatch } from "firebase/firestor
 import { auth, db } from "../../firebase";
 import { MapPin, User } from "lucide-react";
 import { useAuth } from "../../hooks/AuthContext";
+import { useLapor } from "./hooks/useLapor";
+import StatusModel from "./component/statusModal";
 import PolicyDiscussionList from "../discussion/PolicyDiscussionList";
 import DiscussionForm from "../discussion/DiscussionForm";
 
@@ -16,7 +18,7 @@ export default function LaporDetail(){
     const { currentUser } = useAuth();
     const { laporanId } = useParams()
     const { userData } = useAuth()
-
+    const { isAdmin, setShowStatus, search } = useLapor()
 
     const [laporan, setLaporan] = useState([])
 
@@ -64,6 +66,20 @@ export default function LaporDetail(){
         }
     }
 
+    async function handleStatus(newStatus){
+        try {
+            const laporanRef = doc(db, "laporan", laporanId);
+
+            await updateDoc(laporanRef, {
+                status: newStatus
+            });
+
+            console.log(`Successfully updated status for ${laporanId} to ${newStatus}`);
+        } catch (error) {
+            console.error("Error updating document status: ", error);
+        }
+    }
+
     useEffect(() => {
         fetchData()
     }, [])
@@ -88,6 +104,7 @@ export default function LaporDetail(){
 
     return(
         <div className="h-full w-full grid grid-cols-5 gap-5">
+            <StatusModel handleStatus={handleStatus}/>
             <div className="flex flex-col col-span-3 bg-white h-full w-full rounded-2xl border-2 p-5 gap-10 shadow-xl">
                 <img src={laporan.fileURL} alt="image masalah" className="aspect-video h-1/2 w-auto object-contain bg-black rounded-2xl"/>
                 <div className="flex flex-row w-full items-center justify-evenly">
@@ -103,7 +120,7 @@ export default function LaporDetail(){
                         <User />
                         <div className="flex flex-row gap-2">
                             <p>{laporan.pendukung}</p>
-                            <p className="text-black">orang mendukung laporan ini</p>
+                            <p className="text-black">Pendukung</p>
                         </div>
                     </div>
                 </div>
@@ -112,7 +129,14 @@ export default function LaporDetail(){
                         <h1 className="text-4xl font-bold">{laporan.judul}</h1>
                         <p className="text-gray-400">{laporan.deskripsi}</p>
                     </div>
-                    <button onClick={() => upVote()} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Berikan suara untuk laporan ini</button>
+                    {isAdmin ? 
+                        <div className="flex flex-col w-full gap-2">
+                            <button onClick={() => console.log("analisis")} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">Mulai Analisis Sentimen</button>
+                            <button onClick={() => setShowStatus(true)} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Tindak Lanjuti</button>
+                        </div>
+                        :
+                        <button onClick={() => upVote()} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Berikan suara untuk laporan ini</button>
+                    }
                 </div>
             </div>
 

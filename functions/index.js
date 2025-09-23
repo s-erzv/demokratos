@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
+const { VertexAI } = require('@google-cloud/vertexai'); 
 
 admin.initializeApp(); 
 
@@ -38,6 +39,48 @@ async function deleteQueryBatch(query, resolve) {
     });
 }
 
+// ====================================================================
+// INISIALISASI VERTEX AI & KONFIGURASI GEMINI
+// ====================================================================
+const projectID = 'demokratos-5b0ce'; 
+const location = 'us-central1'; 
+const vertex_ai = new VertexAI({ project: projectID, location: location });
+const model = 'gemini-2.5-flash';
+
+// Prompt sistem yang tegas dan fokus pada output JSON
+const systemInstruction = "Anda adalah asisten analisis sentimen yang spesifik. Tugas Anda adalah membaca koleksi komentar pengguna tentang suatu kebijakan/laporan dan memberikan RINGKASAN yang berfokus pada sentimen (setuju/tidak setuju), tema utama yang diangkat, dan nada emosional secara keseluruhan. Output harus dalam format JSON yang ketat. JANGAN sertakan markdown backticks (`json) atau format lain di output JSON.";
+
+const generationConfig = {
+    responseMimeType: "application/json", 
+    responseSchema: {
+        type: "object",
+        properties: {
+            sentimenKeseluruhan: {
+                type: "string",
+                description: "Kesimpulan sentimen umum: Positif, Negatif, atau Netral."
+            },
+            persentaseSetuju: {
+                type: "integer",
+                description: "Perkiraan persentase Setuju/Mendukung (0-100)." 
+            },
+            persentaseTidakSetuju: {
+                type: "integer",
+                description: "Perkiraan persentase Tidak Setuju/Menentang (0-100)."
+            },
+            temaUtama: {
+                type: "array",
+                items: { type: "string" },
+                description: "Maksimal 3 tema atau isu paling sering dibahas di komentar."
+            },
+            ringkasanKualitatif: {
+                type: "string",
+                description: "Ringkasan naratif singkat (max 3 kalimat) tentang alasan di balik sentimen tersebut."
+            }
+        }
+    },
+};
+
+
 exports.submitPolicy = functions.https.onRequest((req, res) => {
     cors(req, res, async () => {
         
@@ -57,7 +100,7 @@ exports.submitPolicy = functions.https.onRequest((req, res) => {
             const decodedToken = await admin.auth().verifyIdToken(idToken);
             userId = decodedToken.uid;
         } catch (error) {
-            return res.status(401).json({ status: 'error', message: 'Token tidak valid atau kedaluwarsa. Silakan login ulang.' });
+            return res.status(401).json({ status: 'error', message: 'Token tidak valid atau kedaluwarsa.' });
         }
 
         try {
@@ -107,6 +150,69 @@ exports.submitPolicy = functions.https.onRequest((req, res) => {
             
         } catch (error) {
             return res.status(500).json({ status: 'error', message: 'Gagal menyimpan kebijakan ke database.' });
+        }
+    });
+});
+
+exports.updatePolicy = functions.https.onRequest((req, res) => {
+    cors(req, res, async () => {
+        
+        if (req.method !== 'POST') {
+            return res.status(405).send('Method Not Allowed');
+        }
+
+        const authorization = req.headers.authorization;
+        if (!authorization || !authorization.startsWith('Bearer ')) {
+            return res.status(401).json({ status: 'error', message: 'Anda harus login untuk mengakses fitur ini.' });
+        }
+
+        const idToken = authorization.split('Bearer ')[1];
+        let userId;
+
+        try {
+            const decodedToken = await admin.auth().verifyIdToken(idToken);
+            userId = decodedToken.uid;
+        } catch (error) {
+            return res.status(401).json({ status: 'error', message: 'Token tidak valid atau kedaluwarsa.' });
+        }
+        
+        const { policyId, title, description, category, deadline, thumbnailUrl, documentUrl } = req.body;
+
+        if (!policyId) {
+            return res.status(400).json({ status: 'error', message: 'ID kebijakan tidak ditemukan.' });
+        }
+        
+        if (!title || !description || !category || !deadline || !thumbnailUrl) {
+            return res.status(400).json({ status: 'error', message: 'Data kebijakan wajib diisi.' });
+        }
+
+        try {
+            const userDoc = await db.collection('users').doc(userId).get();
+            
+            if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                return res.status(403).json({ status: 'error', message: 'Hanya Admin yang dapat mengubah kebijakan.' });
+            }
+
+            const updatedData = {
+                title,
+                description,
+                type: category, 
+                thumbnailUrl,
+                documentUrl: documentUrl || null, 
+                dueDate: admin.firestore.Timestamp.fromDate(new Date(deadline)), 
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+
+            await db.collection('policies').doc(policyId).update(updatedData);
+            
+            return res.status(200).json({ 
+                status: 'success', 
+                message: 'Kebijakan berhasil diperbarui.',
+            });
+            
+        } catch (error) {
+            console.error("Error updating policy:", error);
+            return res.status(500).json({ status: 'error', message: `Gagal memperbarui kebijakan. ${error.message}` });
         }
     });
 });

@@ -1,5 +1,3 @@
-// src/components/features/discussion/DiscussionFeed.jsx
-
 import { useState, useEffect, useCallback } from 'react';
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from '../../firebase';
@@ -7,7 +5,7 @@ import PostCard from './PostCard';
 import { useAuth } from '../../hooks/AuthContext';
 import AdminReportFeed from './AdminReportFeed';
 import CreatePostModal from './CreatePostModal';
-import ikonDiskusi from '../../assets/ikonDiskusi.svg';
+import ikonDiskusi from '../../assets/ikondiskusi.svg';
 
 
 const DiscussionFeed = () => {
