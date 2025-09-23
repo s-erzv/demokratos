@@ -15,6 +15,7 @@ const PolicyDetail = () => {
     const { policyId } = useParams();
     const navigate = useNavigate();
     const { currentUser, isAdmin } = useAuth();
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const [policy, setPolicy] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -23,7 +24,7 @@ const PolicyDetail = () => {
 
     const [isDiscussion, setIsDiscussion] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [posts, setPosts] = useState([]);
+    
 
     const [sentimentReport, setSentimentReport] = useState(null);
     const [loadingReport, setLoadingReport] = useState(false);
@@ -48,28 +49,7 @@ const PolicyDetail = () => {
         }
     }, [currentUser]);
 
-    const fetchPosts = useCallback(async () => {
-        if (!policyId) return;
-
-        try {
-            const postsCollection = collection(db, 'posts');
-            const baseQuery = query(
-                postsCollection,
-                where("sourceId", "==", policyId),
-                orderBy('createdAt', 'desc')
-            );
-
-            const querySnapshot = await getDocs(baseQuery);
-            const postsData = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setPosts(postsData);
-
-        } catch (error) {
-            console.error("Error fetching posts for policy:", error);
-        }
-    }, [policyId]);
+    
 
     const fetchPolicyData = useCallback(async () => {
         if (!policyId) return;
@@ -166,13 +146,15 @@ const PolicyDetail = () => {
         }
     }, [policyId]);
 
+    const triggerRefresh = () => {
+        setRefreshKey(prevKey => prevKey + 1); 
+    };
 
     const handleRefetch = useCallback(() => {
         fetchPolicyData();
-        fetchPosts();
         setSentimentReport(null);
         setErrorReport(null);
-    }, [fetchPolicyData, fetchPosts]);
+    }, [fetchPolicyData]);
 
     const {
         isModalOpen,
@@ -185,8 +167,7 @@ const PolicyDetail = () => {
 
     useEffect(() => {
         fetchPolicyData();
-        fetchPosts();
-    }, [fetchPolicyData, fetchPosts]);
+    }, [fetchPolicyData]);
 
 
     if (loading || loadingVote) {
@@ -386,89 +367,29 @@ const PolicyDetail = () => {
                                 </div>
                             </div>
                             {policy && isDiscussion && (
-                                <PolicyDiscussion
+                                <DiscussionForm
                                     isOpen={isDiscussion}
                                     onClose={() => setIsDiscussion(false)}
-                                    onPostCreated={handleRefetch}
-                                    policyId={policy.id}
-                                    policyType={policy.type}
+                                    sourceType="policy"
+                                    sourceId={policy.id}
+                                    additionalData={{ type: policy.type }}
+                                    onDiscussionAdded={triggerRefresh}
                                 />
                             )}
                             <div className="space-y-4 pt-6 border-slate-200/80">
+                            
                                 <PolicyDiscussionList
-                                    policyId={policy.id}
+                                    sourceId={policy.id}
+                                    searchTerm={searchTerm}
+                                    refreshKey={refreshKey}
                                 />
+                            
+                                
                             </div>
                         </div>
                     )}
                     {/* === AKHIR KARTU ANALISIS SENTIMEN DISPLAY === */}
                     
-                    {/* Ruang Aspirasi Warga (Comments Section) */}
-                    
-                    <div className="bg-white py- px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
-
-                        {/* Bagian Judul */}
-                        <div className="space-y-2">
-                            <h2 className="text-xl  font-bold text-slate-900">
-                            Ruang Aspirasi Warga
-                            </h2>
-                            <p className="text-slate-500 text-xs">
-                            Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
-                            </p>
-                        </div>
-                        
-                        {/* Form Input & Tombol */}
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <input 
-                            type="text" 
-                            placeholder="Tuliskan aspirasi atau cari topik diskusi..." 
-                            className="
-                                w-full px-4 py-2 bg-slate-50 border border-red-800 text-slate-800
-                                placeholder-slate-400 rounded-full
-                                focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
-                                transition duration-300 ease-in-out
-                            "
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-
-                            <button 
-                            type="submit"
-                            disabled={!currentUser}
-                            onClick={() => setIsDiscussion(true)}
-                            aria-label="Kirim Aspirasi"
-                            className="
-                                flex items-center justify-center gap-2 w-full sm:w-auto text-xs flex-shrink-0
-                                px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md
-                                hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-                                transition-all duration-300 ease-in-out transform hover:scale-105
-                                disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
-                            "
-                            >
-                            <span>Berikan Aspirasi</span>
-                            </button>
-                        </div>
-                        
-                        {/* Bagian untuk menampilkan form diskusi (Modal/Component) */}
-                        {policy && isDiscussion && (
-                            <DiscussionForm
-                                isOpen={isDiscussion}
-                                onClose={() => setIsDiscussion(false)}
-                                onPostCreated={fetchPosts} 
-                                sourceType="policy"
-                                sourceId={policy.id}
-                                additionalData={{ type: policy.type }}
-                            />
-                        )}
-                        
-                        {/* Daftar Diskusi */}
-                        <div className="space-y-4 pt-6 border-slate-200/80">
-                            <PolicyDiscussionList 
-                            sourceId={policy.id}
-                            searchTerm={searchTerm}
-                            />
-                        </div>
-                    </div>
                 </div>
             </div>
             <VotingModal

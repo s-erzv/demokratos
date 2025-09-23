@@ -3,48 +3,51 @@ import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from '../../firebase';
 import PostCard from './PostCard';
 
-const PolicyDiscussionList = ({ sourceId }) => {
-  const [discussions, setDiscussions] = useState([]);
+const PolicyDiscussionList = ({ sourceId, searchTerm = '', refreshKey }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [allDiscussions, setAllDiscussions] = useState([]);
+  const [filteredDiscussions, setFilteredDiscussions] = useState([]);
   
 
   const fetchDiscussions = useCallback(async () => {
-    // 2. Jaga agar tidak fetch jika sourceId belum siap
-    if (!sourceId) {
-      setLoading(false);
-      return;
-    }
-
+    if (!sourceId) { setLoading(false); return; }
     setLoading(true);
     try {
       const postsCollection = collection(db, 'posts');
-      
-      // 3. Gunakan 'sourceId' di dalam query
       const q = query(
         postsCollection, 
         where("sourceId", "==", sourceId),
         orderBy("createdAt", "desc")
       );
-
       const querySnapshot = await getDocs(q);
-      const discussionsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      setDiscussions(discussionsData);
+      const discussionsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllDiscussions(discussionsData);
+      setFilteredDiscussions(discussionsData);
     } catch (err) {
       console.error("Error fetching discussions:", err);
       setError("Gagal memuat diskusi.");
     } finally {
       setLoading(false);
     }
-  }, [sourceId]); // 4. Jadikan 'sourceId' sebagai dependensi
+  }, [sourceId, refreshKey]);
 
   useEffect(() => {
     fetchDiscussions();
   }, [fetchDiscussions]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredDiscussions(allDiscussions);
+    } else {
+      const lowercasedTerm = searchTerm.toLowerCase();
+      const filtered = allDiscussions.filter(discussion => 
+        discussion.question.toLowerCase().includes(lowercasedTerm) ||
+        (discussion.body && discussion.body.toLowerCase().includes(lowercasedTerm))
+      );
+      setFilteredDiscussions(filtered);
+    }
+  }, [searchTerm, allDiscussions]);
 
   if (loading) {
     return <p className="text-center mt-8">Memuat diskusi...</p>;
@@ -56,11 +59,13 @@ const PolicyDiscussionList = ({ sourceId }) => {
 
   return (
     <div className="mt-2">
-      {discussions.length > 0 ? (
-        <div className="space-y-1">
-          {discussions.map(post => (
-            // Kita bisa gunakan ulang komponen PostCard yang sudah ada!
-            <PostCard key={post.id} post={post} />
+      {filteredDiscussions.length > 0 ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          {filteredDiscussions.map((post, index) => (
+            <div key={post.id}>
+              <PostCard post={post} onUpdate={fetchDiscussions} />
+              {index < filteredDiscussions.length - 1 && <hr className="mx-6" />}
+            </div>
           ))}
         </div>
       ) : (
