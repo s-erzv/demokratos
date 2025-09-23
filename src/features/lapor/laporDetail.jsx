@@ -107,11 +107,11 @@ export default function LaporDetail(){
     const textAnalisisButton = hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen"
 
     return(
-        <div className="h-full w-full grid grid-cols-5 gap-5">
+        <div className="h-full w-full flex flex-col lg:grid lg:grid-cols-5 gap-5">
             <StatusModel handleStatus={handleStatus}/>
             <div className="flex flex-col col-span-3 bg-white h-full w-full rounded-2xl border-2 p-5 gap-10 shadow-xl">
                 <img src={laporan.fileURL} alt="image masalah" className="aspect-video h-1/2 w-auto object-contain bg-black rounded-2xl"/>
-                <div className="flex flex-row w-full items-center justify-evenly">
+                <div className="flex sm:flex-row flex-col gap-5 w-full items-center justify-evenly">
                     <div className="flex flex-row gap-2 text-sm">
                         <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.status}</p>
                         <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.kategori}</p>
