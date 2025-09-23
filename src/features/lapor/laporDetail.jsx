@@ -13,12 +13,10 @@ export default function LaporDetail(){
     const [isDiscussion, setIsDiscussion] = useState(false);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [posts, setPosts] = useState([]);
-    const [policy, setPolicy] = useState(null);
     const { currentUser } = useAuth();
     const { laporanId } = useParams()
     const { userData } = useAuth()
-    const { isAdmin, setShowStatus, search } = useLapor()
+    const { isAdmin, setShowStatus, analisisLaporan, fetchDiskusi, hasilLaporAnalisis, showAnalisis, setShowAnalisis } = useLapor()
 
     const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -63,6 +61,8 @@ export default function LaporDetail(){
             batch.set(pendukungRef, { createdAt: new Date() });
 
             await batch.commit();
+
+            fetchData()
             
             console.log("Upvote berhasil!");
 
@@ -79,7 +79,8 @@ export default function LaporDetail(){
                 status: newStatus
             });
 
-            console.log(`Successfully updated status for ${laporanId} to ${newStatus}`);
+            fetchData()
+
         } catch (error) {
             console.error("Error updating document status: ", error);
         }
@@ -87,6 +88,7 @@ export default function LaporDetail(){
 
     useEffect(() => {
         fetchData()
+        fetchDiskusi(laporanId)
     }, [])
 
     const fetchLaporan = async () => {
@@ -107,12 +109,14 @@ export default function LaporDetail(){
     if (loading) return <p>Memuat laporan...</p>;
     if (!laporan) return <p>Laporan tidak ditemukan.</p>;
 
+    const textAnalisisButton = hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen"
+
     return(
-        <div className="h-full w-full grid grid-cols-5 gap-5">
+        <div className="h-full w-full flex flex-col lg:grid lg:grid-cols-5 gap-5">
             <StatusModel handleStatus={handleStatus}/>
             <div className="flex flex-col col-span-3 bg-white h-full w-full rounded-2xl border-2 p-5 gap-10 shadow-xl">
                 <img src={laporan.fileURL} alt="image masalah" className="aspect-video h-1/2 w-auto object-contain bg-black rounded-2xl"/>
-                <div className="flex flex-row w-full items-center justify-evenly">
+                <div className="flex sm:flex-row flex-col gap-5 w-full items-center justify-evenly">
                     <div className="flex flex-row gap-2 text-sm">
                         <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.status}</p>
                         <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.kategori}</p>
@@ -136,7 +140,7 @@ export default function LaporDetail(){
                     </div>
                     {isAdmin ? 
                         <div className="flex flex-col w-full gap-2">
-                            <button onClick={() => console.log("analisis")} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">Mulai Analisis Sentimen</button>
+                            <button onClick={() => {hasilLaporAnalisis ? setShowAnalisis(true) : analisisLaporan()}} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">{textAnalisisButton}</button>
                             <button onClick={() => setShowStatus(true)} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Tindak Lanjuti</button>
                         </div>
                         :
@@ -145,49 +149,62 @@ export default function LaporDetail(){
                 </div>
             </div>
 
+            
+            
             {/* bagian diskusi */}
             <div className="lg:col-span-2 bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
-                {/* Bagian Judul */}
-                <div className="space-y-2">
-                    <h2 className="text-xl font-bold text-slate-900">
-                        Ruang Aspirasi Warga
-                    </h2>
-                            
-                    <p className="text-slate-500 text-xs">
-                        Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
-                    </p>
-                </div>
-                        
-                <div className="flex flex-col sm:flex-row gap-2">
-                    <input 
-                        type="text" 
-                        placeholder="Pilih topik laporan terkini" 
-                        className="
-                            w-full px-4 py-2 bg-slate-50 border border-red-800 text-slate-800
-                            placeholder-slate-400 rounded-full
-                            focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
-                            transition duration-300 ease-in-out
-                        "
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                {hasilLaporAnalisis && showAnalisis ?
+                    <div className="flex flex-col p-5 gap-10">
+                        <h1 className="text-3xl font-bold">Hasil Analisis Sentimen</h1>
+                        <p className="text-justify">{hasilLaporAnalisis}</p>
+                        <button onClick={() => setShowAnalisis(false)} className="bg-secondary hover:bg-primary rounded-full p-2 px-4 text-white duration-150">Tutup Analisis</button>
+                    </div>
+                :
+                    <>
+                        {/* Bagian Judul */}
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-bold text-slate-900">
+                                Ruang Aspirasi Warga
+                            </h2>
+                                    
+                            <p className="text-slate-500 text-xs">
+                                Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
+                            </p>
+                        </div>
+                                
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <input 
+                                type="text" 
+                                placeholder="Pilih topik laporan terkini" 
+                                className="
+                                    w-full px-4 py-2 bg-slate-50 border border-red-800 text-slate-800
+                                    placeholder-slate-400 rounded-full
+                                    focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
+                                    transition duration-300 ease-in-out
+                                "
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
 
-                    <button 
-                        type="button"
-                        disabled={!currentUser}
-                        onClick={() => setIsDiscussion(true)}
-                        aria-label="Kirim Aspirasi"
-                        className="
-                            flex items-center justify-center gap-2 w-full sm:w-auto text-xs flex-shrink-0
-                            px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md
-                            hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-                            transition-all duration-300 ease-in-out transform hover:scale-105
-                            disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
-                        "
-                    >
-                        <span>Berikan Aspirasi</span>
-                    </button>
-            </div>
+                            <button 
+                                type="button"
+                                disabled={!currentUser}
+                                onClick={() => setIsDiscussion(true)}
+                                aria-label="Kirim Aspirasi"
+                                className="
+                                    flex items-center justify-center gap-2 w-full sm:w-auto text-xs flex-shrink-0
+                                    px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md
+                                    hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                                    transition-all duration-300 ease-in-out transform hover:scale-105
+                                    disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+                                "
+                            >
+                                <span>Berikan Aspirasi</span>
+                            </button>
+                        </div>
+                    </>
+                }
+            
 
             <hr className="h-1"/>
                         

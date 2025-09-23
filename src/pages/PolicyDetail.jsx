@@ -7,7 +7,6 @@ import { Loader2, Users, Download, ThumbsUp, ThumbsDown, Send, ArrowLeft, Bot, S
 import VotingModal from '../components/VotingModal';
 import { useVoting } from '../hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
-import PolicyDiscussion from '../features/discussion/DiscussionForm';
 import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
 import DiscussionForm from '../features/discussion/DiscussionForm';
 
@@ -192,8 +191,7 @@ const PolicyDetail = () => {
             </MainLayout>
         );
     }
-    
-    // Perbaikan utama ada di sini
+     
     if (!policy) {
         return (
             <MainLayout>
@@ -229,8 +227,8 @@ const PolicyDetail = () => {
 
     return (
         <MainLayout>
-            <div className="mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center justify-center">
+                <div className="lg:col-span-2 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl scrollbar-hide">
                     <div className="bg-white p-6 rounded-xl shadow-lg">
                         <div className="h-56 w-full rounded-xl overflow-hidden shadow-lg relative">
                             <button
@@ -269,7 +267,7 @@ const PolicyDetail = () => {
                     </div>
                 </div>
 
-                <div className="lg:col-span-1 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl">
+                <div className="lg:col-span-1 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl scrollbar-hide">
                     <div className="bg-white p-6 rounded-xl shadow-lg text-center">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Hasil Voting Sementara</h2>
                         <div className="flex justify-center items-center h-32 w-32 mx-auto relative mb-6">
@@ -341,7 +339,7 @@ const PolicyDetail = () => {
                                     Ruang Aspirasi Warga
                                 </h2>
                                 <p className="text-slate-500 text-xs">
-                                    Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
+                                Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-2 pt-2">
                                     <div className="relative w-full">
@@ -382,19 +380,14 @@ const PolicyDetail = () => {
                                 />
                             )}
                             <div className="space-y-4 pt- border-slate-200/80">
-                            
                                 <PolicyDiscussionList
                                     sourceId={policy.id}
                                     searchTerm={searchTerm}
                                     refreshKey={refreshKey}
-                                />
-                            
-                                
+                                />    
                             </div>
                         </div>
-                    )}
-                    {/* === AKHIR KARTU ANALISIS SENTIMEN DISPLAY === */}
-                    
+                    )}      
                 </div>
             </div>
             <VotingModal

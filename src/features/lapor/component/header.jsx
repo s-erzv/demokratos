@@ -12,7 +12,7 @@ export default function Header(){
         <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative mb-10">
             <div className="absolute top-0 right-0 h-full w-[50%] z-0">
                 <div 
-                    className="w-full h-full bg-center bg-cover bg-no-repeat bg-[url('/lapor/indonesiaMap.svg')]" 
+                    className="w-full h-full bg-center bg-cover bg-no-repeat max-xl:hidden bg-[url('/lapor/indonesiaMap.svg')]" 
                 >          
                 </div>
             </div>
@@ -36,16 +36,18 @@ export default function Header(){
                         />
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
                     </div>
-                    <div className="flex flex-col relative">
-                        <button onClick={() => setShowFilter(prev => !prev)} className="bg-secondary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
-                            Filter
-                            <ChevronDown />
+                    <div className="flex flex-row gap-3">
+                        <div className="flex flex-col relative">
+                            <button onClick={() => setShowFilter(prev => !prev)} className="bg-secondary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
+                                Filter
+                                <ChevronDown />
+                            </button>
+                            <FilterList seeMore={showFilter} setSeeMore={setShowFilter}/>
+                        </div>
+                        <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors h-fit`}>
+                            Lapor
                         </button>
-                        <FilterList seeMore={showFilter} setSeeMore={setShowFilter}/>
                     </div>
-                    <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors h-fit`}>
-                        Lapor
-                    </button>
                 </div>
             </div>
         </header>

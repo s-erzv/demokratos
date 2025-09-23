@@ -4,10 +4,11 @@ import LaporCard from './laporCard';
 import { useLapor } from '../hooks/useLapor';
 import { useAuth } from '../../../hooks/AuthContext';
 import { db } from '../../../firebase';
+import { CircleX } from 'lucide-react';
 
 export default function ContentLengkap({ kategori }) {
     // State dari context untuk search dan filter
-    const { search, filter } = useLapor();
+    const { search, filter, setFilter } = useLapor();
     const { userData } = useAuth();
 
     // State Internal Komponen
@@ -80,11 +81,12 @@ export default function ContentLengkap({ kategori }) {
 
     return (
         <div className="w-full">
-            <div className="flex flex-row items-center justify-between">
-                <h1 className="p-5 text-3xl font-bold border-b-2">{kategori}</h1>
+            <div className={`${filter ? " " : "hidden"} flex flex-row p-2 gap-1  w-fit items-center`}>
+                <p>Kategori: </p>
+                <button onClick={() => setFilter("")} className="flex flex-row gap-2 items-center text-white bg-primary p-1 px-3">{filter}<CircleX size={20}/></button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-5 p-2 mb-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-2">
                 {currentItems.map(laporan => (
                     <div key={laporan.id}>
                         <LaporCard imageURL={laporan.fileURL} judul={laporan.judul} deskripsi={laporan.deskripsi} alamat={laporan.alamat} kategori={laporan.kategori} status={laporan.status} pendukung={laporan.pendukung} id={laporan.docId}/>
