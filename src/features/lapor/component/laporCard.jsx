@@ -5,8 +5,8 @@ export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori,
     const navigate = useNavigate()
 
     return(
-        <div className="h-full w-full bg-white border-2 rounded-2xl p-2 aspect-square flex flex-col gap-3 shadow-md">
-            <img src={imageURL} alt={`${judul} image`} className="h-1/2 w-full rounded-2xl object-cover"/>
+        <div className="h-fit w-full bg-white border-2 rounded-2xl p-2 flex flex-col gap-3 shadow-md">
+            <img src={imageURL} alt={`${judul} image`} className="h-40 w-full rounded-2xl object-cover"/>
             <div className="flex flex-col px-2 gap-3 justify-between">
                 <div className="flex flex-row gap-2 text-[10px] ">
                     <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{status}</p>
@@ -20,7 +20,7 @@ export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori,
                     <MapPin />
                     <p>{alamat}</p>
                 </div>
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-row items-center justify-between gap-5">
                     <div className="flex flex-row gap-2 text-sm">
                         <User className="text-primary"/>
                         <div className="flex flex-row gap-1 items-center">

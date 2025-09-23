@@ -13,12 +13,10 @@ export default function LaporDetail(){
     const [isDiscussion, setIsDiscussion] = useState(false);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [posts, setPosts] = useState([]);
-    const [policy, setPolicy] = useState(null);
     const { currentUser } = useAuth();
     const { laporanId } = useParams()
     const { userData } = useAuth()
-    const { isAdmin, setShowStatus, search } = useLapor()
+    const { isAdmin, setShowStatus, analisisLaporan, fetchDiskusi, hasilLaporAnalisis, showAnalisis, setShowAnalisis } = useLapor()
 
     const [laporan, setLaporan] = useState([])
 
@@ -58,6 +56,8 @@ export default function LaporDetail(){
             batch.set(pendukungRef, { createdAt: new Date() });
 
             await batch.commit();
+
+            fetchData()
             
             console.log("Upvote berhasil!");
 
@@ -74,7 +74,8 @@ export default function LaporDetail(){
                 status: newStatus
             });
 
-            console.log(`Successfully updated status for ${laporanId} to ${newStatus}`);
+            fetchData()
+
         } catch (error) {
             console.error("Error updating document status: ", error);
         }
@@ -82,6 +83,7 @@ export default function LaporDetail(){
 
     useEffect(() => {
         fetchData()
+        fetchDiskusi(laporanId)
     }, [])
 
     const fetchLaporan = async () => {
@@ -101,6 +103,8 @@ export default function LaporDetail(){
 
     if (loading) return <p>Memuat laporan...</p>;
     if (!laporan) return <p>Laporan tidak ditemukan.</p>;
+
+    const textAnalisisButton = hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen"
 
     return(
         <div className="h-full w-full grid grid-cols-5 gap-5">
@@ -131,7 +135,7 @@ export default function LaporDetail(){
                     </div>
                     {isAdmin ? 
                         <div className="flex flex-col w-full gap-2">
-                            <button onClick={() => console.log("analisis")} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">Mulai Analisis Sentimen</button>
+                            <button onClick={() => {hasilLaporAnalisis ? setShowAnalisis(true) : analisisLaporan()}} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">{textAnalisisButton}</button>
                             <button onClick={() => setShowStatus(true)} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Tindak Lanjuti</button>
                         </div>
                         :
@@ -140,9 +144,19 @@ export default function LaporDetail(){
                 </div>
             </div>
 
+            
+            
             {/* bagian diskusi */}
             <div className="lg:col-span-2 bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
 
+                {hasilLaporAnalisis && showAnalisis ?
+                    <div className="flex flex-col p-5 gap-10">
+                        <h1 className="text-3xl font-bold">Hasil Analisis Sentimen</h1>
+                        <p className="text-justify">{hasilLaporAnalisis}</p>
+                        <button onClick={() => setShowAnalisis(false)} className="bg-secondary hover:bg-primary rounded-full p-2 px-4 text-white duration-150">Tutup Analisis</button>
+                    </div>
+                :
+                    <>
                         {/* Bagian Judul */}
                         <div className="space-y-2">
                             {/* Judul 
@@ -219,7 +233,9 @@ export default function LaporDetail(){
                             sourceId={laporan.id}
                             />
                         </div>
-                    </div>
+                    </>
+                }  
+            </div>
         </div>
     )
 }

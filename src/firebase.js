@@ -3,6 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
+import { getAI, getGenerativeModel, VertexAIBackend } from "firebase/ai";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -26,11 +27,29 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 const functions = getFunctions(app, 'us-central1'); 
-console.log("firebaseConfig.js: Menggunakan konfigurasi dari .env dan region us-central1.");
+
+// Initialize the Vertex AI Gemini API backend service
+const ai = getAI(app, { backend: new VertexAIBackend() });
+
+// Create a `GenerativeModel` instance with a model that supports your use case
+const LaporanModel = getGenerativeModel(ai, { 
+  model: "gemini-2.5-flash",
+  systemInstruction: 
+  `
+    Kamu adalah asisten seorang penjabat negara Indonesia. Kamu berfungsi untuk menganalisis dan meringkas aspirasi dari rakyat
+    mengenai laporan yang diberikan. Berikan hasil analisis dengan singkat dan ringkas. Yang terpenting adalah akurat dan sesuai
+    dengan suara rakyat.
+    
+    Hindari menggunakan **, penomeran, atau tanda tanda lainnya, cukup pake kalimat aja. untuk alternatif penomeran, mungkin
+    pake paragraf aja.
+  `
+});
+
 
 export {
   db,
   auth,
   functions,
   storage,
+  LaporanModel,
 };
