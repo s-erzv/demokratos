@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/AuthContext';
 import UserDashboard from './UserDashboard';  
 import AdminDashboard from './AdminDashboard';  
 import MainLayout from '../components/MainLayout';
+import { LaporProvider } from '../features/lapor/hooks/useLapor';
 
 const AdminDashboardPlaceholder = () => (
     <MainLayout>
@@ -33,7 +34,11 @@ const Dashboard = () => {
         return <AdminDashboardPlaceholder />; 
     }
  
-    return <UserDashboard />;
+    return(
+        <LaporProvider>
+            <UserDashboard />;
+        </LaporProvider>
+    ) 
 };
 
 export default Dashboard;

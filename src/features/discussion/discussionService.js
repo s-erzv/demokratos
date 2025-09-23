@@ -1,6 +1,6 @@
 // src/components/features/discussion/discussionService.js
 
-import { doc, runTransaction, collection, getDoc, setDoc, increment } from "firebase/firestore";
+import { doc, runTransaction, collection, getDoc, setDoc, increment, deleteDoc, writeBatch } from "firebase/firestore";
 import { db } from "../../firebase"
 
 /**
