@@ -1,5 +1,5 @@
 import { MapPin, User } from "lucide-react";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori, status, pendukung, id}){
     const navigate = useNavigate()

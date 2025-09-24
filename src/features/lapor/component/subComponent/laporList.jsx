@@ -74,7 +74,7 @@ export default function LaporList({kategori}){
                 <h1 className="p-5 text-3xl font-bold border-b-2">{kategori}</h1>
                 <button onClick={() => navigate("/laporan/all")} className={`bg-primary rounded-full p-1 px-3 text-white hover:bg-secondary duration-150`}>Lihat semua</button>
             </div>
-            <div className="flex flex-row overflow-x-auto h-fit w-full gap-5 p-2 mb-5">
+            <div className="flex flex-row overflow-x-scroll h-fit w-full gap-5 p-2 mb-5" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                 {filteredData.slice(0, 9).map(laporan => (
                     <div key={laporan.id} className="flex-shrink-0">
                         <LaporCard imageURL={laporan.fileURL} judul={laporan.judul} deskripsi={laporan.deskripsi} alamat={laporan.alamat} kategori={laporan.kategori} status={laporan.status} pendukung={laporan.pendukung} id={laporan.docId}/>

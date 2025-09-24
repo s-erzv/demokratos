@@ -3,7 +3,7 @@ import LaporList from "./subComponent/laporList";
 import { CircleX } from "lucide-react";
 
 export default function Content(){
-    const { filter, setFilter } = useLapor()
+    const { filter, setFilter, loading } = useLapor()
 
     return(
         <>
