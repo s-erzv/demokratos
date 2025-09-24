@@ -1,47 +1,53 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from '../../firebase';
 import PostCard from './PostCard';
 
-const PolicyDiscussionList = ({ policyId }) => {
-  const [discussions, setDiscussions] = useState([]);
+const PolicyDiscussionList = ({ sourceId, searchTerm = '', refreshKey }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [allDiscussions, setAllDiscussions] = useState([]);
+  const [filteredDiscussions, setFilteredDiscussions] = useState([]);
+  
+
+  const fetchDiscussions = useCallback(async () => {
+    if (!sourceId) { setLoading(false); return; }
+    setLoading(true);
+    try {
+      const postsCollection = collection(db, 'posts');
+      const q = query(
+        postsCollection, 
+        where("sourceId", "==", sourceId),
+        orderBy("createdAt", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+      const discussionsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllDiscussions(discussionsData);
+      setFilteredDiscussions(discussionsData);
+    } catch (err) {
+      console.error("Error fetching discussions:", err);
+      setError("Gagal memuat diskusi.");
+    } finally {
+      setLoading(false);
+    }
+  }, [sourceId, refreshKey]);
 
   useEffect(() => {
-    const fetchDiscussions = async () => {
-      if (!policyId) return; // Jangan fetch jika tidak ada ID kebijakan
-
-      setLoading(true);
-      try {
-        const postsCollection = collection(db, 'posts');
-        
-        // --- INI ADALAH QUERY KUNCINYA ---
-        // Ambil semua post DI MANA 'sourceId' sama dengan 'policyId'
-        // dan urutkan berdasarkan yang terbaru.
-        const q = query(
-          postsCollection, 
-          where("sourceId", "==", policyId),
-          orderBy("createdAt", "desc")
-        );
-
-        const querySnapshot = await getDocs(q);
-        const discussionsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        setDiscussions(discussionsData);
-      } catch (err) {
-        console.error("Error fetching policy discussions:", err);
-        setError("Gagal memuat diskusi.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDiscussions();
-  }, [policyId]); // Jalankan ulang jika policyId berubah
+  }, [fetchDiscussions]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredDiscussions(allDiscussions);
+    } else {
+      const lowercasedTerm = searchTerm.toLowerCase();
+      const filtered = allDiscussions.filter(discussion => 
+        discussion.question.toLowerCase().includes(lowercasedTerm) ||
+        (discussion.body && discussion.body.toLowerCase().includes(lowercasedTerm))
+      );
+      setFilteredDiscussions(filtered);
+    }
+  }, [searchTerm, allDiscussions]);
 
   if (loading) {
     return <p className="text-center mt-8">Memuat diskusi...</p>;
@@ -53,11 +59,13 @@ const PolicyDiscussionList = ({ policyId }) => {
 
   return (
     <div className="mt-2">
-      {discussions.length > 0 ? (
-        <div className="space-y-1">
-          {discussions.map(post => (
-            // Kita bisa gunakan ulang komponen PostCard yang sudah ada!
-            <PostCard key={post.id} post={post} />
+      {filteredDiscussions.length > 0 ? (
+        <div className="">
+          {filteredDiscussions.map((post, index) => (
+            <div key={post.id}>
+              <PostCard post={post} onUpdate={fetchDiscussions} />
+              {index < filteredDiscussions.length - 1 }
+            </div>
           ))}
         </div>
       ) : (

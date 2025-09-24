@@ -85,47 +85,40 @@ const CommentCard = ({ comment, postId, level = 0, hideReplyButton = false}) => 
     <div style={{ marginLeft: `${level * 24}px` }} className="border-gray-200 pb-2">
       {level > 0 }
 
-      <div>
-        <div className="flex items-start gap-4">
-          {/* KOLOM KIRI: Avatar */}
-          <div className="flex-shrink-0">
-            {comment.authorPhotoURL ? (
-              <img 
-                // PERBAIKAN: Menggunakan variabel 'comment' yang benar, bukan 'post'
-                src={comment.authorPhotoURL} 
-                alt={comment.authorName} 
-                className="w-10 h-10 rounded-full object-cover" 
-              />
-            ) : (
-              <UserCircle size={40} className="text-slate-400" />
-            )}
-            </div>
+      <div className="">
 
+        <div className="flex justify-between items-start mb-4">
+
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0">
+              {comment.authorPhotoURL ? (
+                <img 
+                  // PERBAIKAN: Menggunakan variabel 'comment' yang benar, bukan 'post'
+                  src={comment.authorPhotoURL} 
+                  alt={comment.authorName} 
+                  className="w-10 h-10 rounded-full object-cover" 
+                />
+              ) : (
+                <UserCircle size={35} className="text-slate-400" />
+              )}
+            </div>
             <span className="font-semibold text-sm text-slate-800">
               {comment.authorName}
             </span>
           </div>
 
-
-      {/* KOLOM KANAN: Semua konten komentar */}
-      <div className="flex-1 min-w-0">
-        
-        {/* BAGIAN ATAS: Info penulis dan waktu */}
-        <div className="flex justify-end">
-          {/* Waktu */}
           <span className="text-xs text-slate-400 flex-shrink-0 ml-4">
             {formatTimeAgo(comment.createdAt)}
           </span>
         </div>
 
-        {/* BAGIAN TENGAH: Isi komentar */}
+      <div className="flex-1 min-w-0">
+
         <div className="mt-1">
           <p className="text-slate-600 text-sm leading-relaxed break-words">
             {comment.text}
           </p>
         </div>
-        
-        {/* Di sini bisa ditambahkan tombol aksi untuk komentar jika ada (suka, balas, dll) */}
 
       </div>
     </div>

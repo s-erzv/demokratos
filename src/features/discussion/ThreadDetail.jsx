@@ -128,7 +128,7 @@ const handleReportClick = () => {
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
-    // 1. KONTENER INDUK: Tetap menggunakan layout full-width yang responsif.
+    
     <div className="min-h-screen ">
       <div className="max-w-7xl mx-auto ">
         
@@ -136,7 +136,7 @@ const handleReportClick = () => {
         <div className="space-y-6">
   
           {post && (
-            // 2. KARTU PERTAMA: Hanya untuk post utama.
+            
             <div className="bg-white rounded-3xl shadow-lg border border-slate-200/80">
               <div className="p-6 sm:py-8 sm:px-12">
                 
@@ -152,7 +152,7 @@ const handleReportClick = () => {
                           className="w-10 h-10 rounded-full object-cover" 
                         />
                       ) : (
-                        <UserCircle size={40} className="text-slate-400" />
+                        <UserCircle size={35} className="text-slate-400" />
                       )}
                     </div>
                     <span className="font-semibold text-slate-800">{post.authorName}</span>
@@ -163,13 +163,23 @@ const handleReportClick = () => {
                 </div>
 
                 {/* BAGIAN TENGAH: Badge, Judul, dan Body (indentasi pl-[60px] dihilangkan) */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <h2 className="text-xl font-bold text-slate-900 break-words">{post.question}</h2>
                   <p className="text-slate-600 leading-relaxed">{post.body}</p>
+
+                  {post.fileUrl && (
+                  <div className="mt-4">
+                    <img 
+                      src={post.fileUrl} 
+                      alt="Lampiran diskusi" 
+                      className="w-auto h-auto max-h-80 object-cover rounded-lg "
+                    />
+                  </div>
+                  )}
                 </div>
                 
                 {/* BAGIAN BAWAH: Tombol Aksi & Tombol Jawab (indentasi pl-[60px] dihilangkan) */}
-                <div className="mt-1 flex justify-between items-center">
+                <div className="mt-3 flex justify-between items-center">
                   {/* Kiri: Suka, Jumlah Balasan */}
                   <div className="flex items-center gap-6 text-slate-500">
                     <button onClick={handleLikeClick} disabled={!currentUser || isLiking} className="flex items-center gap-2 text-sm hover:text-red-500 transition-colors disabled:opacity-50">
@@ -188,7 +198,7 @@ const handleReportClick = () => {
                   {!isCommentFormVisible && currentUser && (
                     <button
                       onClick={() => setIsCommentFormVisible(true)}
-                      className="bg-primary ml-auto text-white font-semibold py-2 px-5 rounded-full hover:bg-red-800 transition-colors"
+                      className="bg-primary ml-auto text-sm md:text-base text-white font-semibold py-1.5 px-4 md:py-2 md:px-5 rounded-full hover:bg-red-800 transition-colors"
                     >
                       Jawab Diskusi
                     </button>
@@ -201,7 +211,11 @@ const handleReportClick = () => {
           {/* 3. KARTU KEDUA: Khusus untuk bagian balasan. */}
           <div className="bg-white rounded-3xl shadow-lg border border-slate-200/80">
             <div className="p-6 sm:py-8 sm:px-12">
-              <p className="text-sm font-bold text-slate-800 mb-5">Balasan </p>
+              <div className='flex gap-1.5 sm:gap-3'>
+                <p className="text-sm font-bold text-slate-800 mb-5">Balasan</p>
+                <p className="text-sm font-bold text-slate-800 mb-5">{post.authorName}</p>
+              </div>
+              
   
               <div className="space-y-6">
                 {isCommentFormVisible && (
@@ -212,7 +226,7 @@ const handleReportClick = () => {
                 )}
   
                 {comments.length > 0 ? (
-                  // Setiap balasan akan memiliki pemisah
+                
                   comments.map(comment => (
                     <div key={comment.id} className=" border-slate-100   last:pb-0">
                       <CommentCard comment={comment} postId={postId} />

@@ -1,102 +1,91 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
-// PENTING: Tambahkan ini untuk integrasi Gemini AI
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Inisialisasi Firebase Admin
 admin.initializeApp(); 
-
 const db = admin.firestore();
 
-// PENTING: Inisialisasi Gemini AI. 
-// Cari kunci API di konfigurasi Firebase, atau di process.env (untuk local testing / runtime baru)
-let geminiApiKey;
-
+let genAI;
 try {
-    // Coba ambil dari konfigurasi Firebase (Metode lama/standar)
-    geminiApiKey = functions.config().gemini.api_key;
+    const geminiApiKey = functions.config().gemini.api_key || process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+        throw new Error("GEMINI_API_KEY not found.");
+    }
+    genAI = new GoogleGenerativeAI(geminiApiKey);
 } catch (e) {
-    // Jika gagal (misalnya saat local testing atau menggunakan Node.js 18+ runtime baru)
-    geminiApiKey = process.env.GEMINI_API_KEY;
+    console.error("Gagal menginisialisasi Gemini AI:", e.message);
 }
 
-if (!geminiApiKey) {
-    console.error("GEMINI_API_KEY is not set in environment or Firebase config!");
+async function deleteCollection(collectionPath, batchSize) {
+    const collectionRef = db.collection(collectionPath);
+    const query = collectionRef.orderBy('__name__').limit(batchSize);
+  
+    return new Promise((resolve, reject) => {
+      deleteQueryBatch(query, resolve).catch(reject);
+    });
 }
-
-const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-
+  
+async function deleteQueryBatch(query, resolve) {
+    const snapshot = await query.get();
+    const batchSize = snapshot.size;
+    if (batchSize === 0) {
+      resolve();
+      return;
+    }
+  
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  
+    process.nextTick(() => {
+      deleteQueryBatch(query, resolve);
+    });
+}
 
 exports.submitPolicy = functions.https.onRequest((req, res) => {
     cors(req, res, async () => {
-        
-        if (req.method !== 'POST') {
-            return res.status(405).send('Method Not Allowed');
-        }
+        if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-        const authorization = req.headers.authorization;
+        const { authorization } = req.headers;
         if (!authorization || !authorization.startsWith('Bearer ')) {
-            return res.status(401).json({ status: 'error', message: 'Anda harus login untuk mengakses fitur ini.' });
+            return res.status(401).json({ status: 'error', message: 'Anda harus login.' });
         }
 
-        const idToken = authorization.split('Bearer ')[1];
-        let userId;
-
         try {
+            const idToken = authorization.split('Bearer ')[1];
             const decodedToken = await admin.auth().verifyIdToken(idToken);
-            userId = decodedToken.uid;
-        } catch (error) {
-            return res.status(401).json({ status: 'error', message: 'Token tidak valid atau kedaluwarsa. Silakan login ulang.' });
-        }
-
-        try {
+            const userId = decodedToken.uid;
             const userDoc = await db.collection('users').doc(userId).get();
             
             if (!userDoc.exists || userDoc.data().role !== 'admin') {
                 return res.status(403).json({ status: 'error', message: 'Hanya Admin yang dapat membuat kebijakan.' });
             }
 
-        } catch (error) {
-            return res.status(500).json({ status: 'error', message: 'Gagal memverifikasi peran pengguna.' });
-        }
-        
-        const { title, description, category, deadline, thumbnailUrl, documentUrl } = req.body;
-        
-        if (!title || !description || !category || !deadline || !thumbnailUrl) {
-            return res.status(400).json({ status: 'error', message: 'Data kebijakan wajib diisi.' });
-        }
-        
-        const validCategories = ['kebijakan', 'program'];
-        if (!validCategories.includes(category)) {
-            return res.status(400).json({ status: 'error', message: 'Kategori harus "kebijakan" atau "program".' });
-        }
+            const { title, description, category, deadline, thumbnailUrl, documentUrl } = req.body;
+            if (!title || !description || !category || !deadline || !thumbnailUrl) {
+                return res.status(400).json({ status: 'error', message: 'Data kebijakan wajib diisi.' });
+            }
 
-        const newPolicyData = {
-            title,
-            description,
-            type: category,
-            thumbnailUrl,
-            documentUrl: documentUrl || null,
-            votesYes: 0,
-            votesNo: 0,
-            status: 'Active', 
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            dueDate: admin.firestore.Timestamp.fromDate(new Date(deadline)), 
-            authorId: userId,
-        };
+            const newPolicyData = {
+                title, description, thumbnailUrl,
+                type: category,
+                documentUrl: documentUrl || null,
+                votesYes: 0, votesNo: 0,
+                status: 'Active', 
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                dueDate: admin.firestore.Timestamp.fromDate(new Date(deadline)), 
+                authorId: userId,
+            };
 
-        try {
             const docRef = await db.collection('policies').add(newPolicyData);
-            
-            return res.status(200).json({ 
-                status: 'success', 
-                message: 'Kebijakan berhasil dibuat dan dipublikasikan.',
-                policyId: docRef.id
-            });
-            
+            return res.status(200).json({ status: 'success', message: 'Kebijakan berhasil dibuat.', policyId: docRef.id });
+
         } catch (error) {
-            return res.status(500).json({ status: 'error', message: 'Gagal menyimpan kebijakan ke database.' });
+            console.error("Submit policy error:", error);
+            return res.status(500).json({ status: 'error', message: `Terjadi kesalahan server: ${error.message}` });
         }
     });
 });
@@ -148,7 +137,7 @@ exports.updatePolicy = functions.https.onRequest((req, res) => {
             const updateData = {
                 title,
                 description,
-                type: category, // 'category' dari frontend adalah 'type' di backend
+                type: category,
                 thumbnailUrl,
                 documentUrl: documentUrl || null,
                 dueDate: admin.firestore.Timestamp.fromDate(new Date(deadline)),
@@ -157,10 +146,7 @@ exports.updatePolicy = functions.https.onRequest((req, res) => {
             
             await policyRef.update(updateData);
             
-            return res.status(200).json({ 
-                status: 'success', 
-                message: 'Kebijakan berhasil diperbarui.',
-            });
+            return res.status(200).json({ status: 'success', message: 'Kebijakan berhasil diperbarui.' });
             
         } catch (error) {
             if (error.code === 'not-found') {
@@ -175,7 +161,6 @@ exports.updatePolicy = functions.https.onRequest((req, res) => {
 
 exports.deletePolicy = functions.https.onRequest((req, res) => {
     cors(req, res, async () => {
-        
         if (req.method !== 'POST') {
             return res.status(405).send('Method Not Allowed');
         }
@@ -210,10 +195,7 @@ exports.deletePolicy = functions.https.onRequest((req, res) => {
 
             await db.collection('policies').doc(policyId).delete();
             
-            return res.status(200).json({ 
-                status: 'success', 
-                message: 'Kebijakan berhasil dihapus.',
-            });
+            return res.status(200).json({ status: 'success', message: 'Kebijakan berhasil dihapus.' });
             
         } catch (error) {
             console.error("Error deleting policy:", error);
@@ -224,7 +206,6 @@ exports.deletePolicy = functions.https.onRequest((req, res) => {
  
 exports.votePolicy = functions.https.onRequest((req, res) => {
     cors(req, res, async () => {
-        
         if (req.method !== 'POST') {
             return res.status(405).send('Method Not Allowed');
         }
@@ -250,32 +231,22 @@ exports.votePolicy = functions.https.onRequest((req, res) => {
             return res.status(400).json({ status: 'error', message: 'Pilihan vote tidak valid.' });
         }
         
-        // 1. Cek apakah user sudah voting untuk kebijakan ini (KUNCI PENCEGAHAN DOUBLE VOTE)
-        // Gunakan format dokumen: {userId}_{policyId}
         const userVoteDocRef = db.collection('votes').doc(`${userId}_${policyId}`);
 
         try {
             const userVoteSnap = await userVoteDocRef.get();
 
             if (userVoteSnap.exists) {
-                // Mencegah double vote
-                return res.status(403).json({ status: 'error', message: 'Anda sudah pernah memberikan suara untuk kebijakan ini. Suara Anda adalah final.' });
+                return res.status(403).json({ status: 'error', message: 'Anda sudah pernah memberikan suara untuk kebijakan ini.' });
             }
             
-            // 2. Tentukan field yang akan di-update
             const voteField = vote === 'yes' ? 'votesYes' : 'votesNo';
 
-            // 3. Lakukan transaksi: Update counter di policies dan catat vote user
             await db.runTransaction(async (transaction) => {
-                
                 const policyRef = db.collection('policies').doc(policyId);
-                
-                // a. Update counter vote
                 transaction.update(policyRef, {
                     [voteField]: admin.firestore.FieldValue.increment(1)
                 });
-
-                // b. Catat vote user
                 transaction.set(userVoteDocRef, {
                     policyId: policyId,
                     userId: userId,
@@ -285,10 +256,7 @@ exports.votePolicy = functions.https.onRequest((req, res) => {
                 });
             });
             
-            return res.status(200).json({ 
-                status: 'success', 
-                message: `Suara ${vote === 'yes' ? 'Setuju' : 'Tidak Setuju'} Anda berhasil dicatat.`,
-            });
+            return res.status(200).json({ status: 'success', message: `Suara Anda berhasil dicatat.` });
             
         } catch (error) {
             console.error("Error processing vote transaction:", error);

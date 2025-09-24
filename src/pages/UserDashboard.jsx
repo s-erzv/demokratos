@@ -2,86 +2,85 @@ import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout from '../components/MainLayout';
 import { useAuth } from '../hooks/AuthContext';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'; 
-import { Filter, Loader2, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom'; // Pastikan Link diimpor
-import Card from '../components/Card'; // Pastikan Card diimpor
- 
-const UserReportCard = ({ children }) => (
-    <div className="overflow-x-auto whitespace-nowrap pb-4" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-        {children}
-        <style jsx="true">{`
-            /* Sembunyikan scrollbar untuk pengalaman mobile yang mulus */
-            .overflow-x-auto::-webkit-scrollbar { display: none; }
-            .overflow-x-auto { -ms-overflow-style: none; }
-        `}</style>
-    </div>
-);
- 
+// Impor disederhanakan, tidak perlu collectionGroup lagi
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { Loader2, Activity, TrendingUp, MessageCircle, Vote, FileText } from 'lucide-react';
+import LaporList from '../features/lapor/component/subComponent/laporList';
+
+// STATS VISUALS DIUBAH
 const statsVisuals = [
-    { label: "Total suara kebijakan yang sudah Anda berikan", unit: "Suara", color: "text-primary", key: "votes" },
-    { label: "Laporan publik yang sudah Anda dukung", unit: "Laporan", color: "text-red-600", key: "reports" },
-    { label: "Komentar Anda di ruang diskusi", unit: "Komentar", color: "text-red-700", key: "comments" },
+    { 
+        label: "Suara Kebijakan", 
+        sublabel: "Total voting",
+        unit: "Suara", 
+        color: "text-blue-600", 
+        bgColor: "bg-blue-50",
+        icon: Vote,
+        key: "votes" 
+    },
+    { 
+        label: "Laporan Dibuat",      // <-- Diubah
+        sublabel: "Total laporan Anda", // <-- Diubah
+        unit: "Laporan", 
+        color: "text-green-600", 
+        bgColor: "bg-green-50",
+        icon: FileText,
+        key: "createdReports"      // <-- Diubah
+    },
+    { 
+        label: "Komentar Aktif", 
+        sublabel: "Di ruang diskusi",
+        unit: "Komentar", 
+        color: "text-purple-600", 
+        bgColor: "bg-purple-50",
+        icon: MessageCircle,
+        key: "comments" 
+    },
 ];
 
 const UserDashboard = () => {
     const { userData, currentUser, loading: authLoading } = useAuth();
-    const [userReports, setUserReports] = useState([]);
     const [loadingReports, setLoadingReports] = useState(true);
-     
-    const [stats, setStats] = useState({ votes: 0, reports: 0, comments: 0 }); 
- 
+    // STATE DIUBAH
+    const [stats, setStats] = useState({ votes: 0, createdReports: 0, comments: 0 });
+
+    // FUNGSI FETCHDATA DISEDERHANAKAN
     const fetchUserData = useCallback(async () => {
         if (!currentUser) return;
         setLoadingReports(true);
         const userId = currentUser.uid;
 
         try { 
-            const votesCollection = collection(db, 'votes');
-            const votesQuery = query(votesCollection, where('userId', '==', userId)); 
+            // Fetch votes (tidak berubah)
+            const votesQuery = query(collection(db, 'votes'), where('userId', '==', userId)); 
             const votesSnapshot = await getDocs(votesQuery);
             const votesCount = votesSnapshot.size;
-             
-            // Mengasumsikan laporan yang dibuat user tersimpan di koleksi 'policies'
-            const policiesCollection = collection(db, 'policies');
-            const reportsQuery = query(
-                policiesCollection, 
-                where('authorId', '==', userId), 
-                orderBy('createdAt', 'desc')
-            ); 
-            const reportsSnapshot = await getDocs(reportsQuery);
-
-            const reports = reportsSnapshot.docs.map(doc => {
-                const data = doc.data();
-                const dateObject = data.dueDate ? data.dueDate.toDate() : new Date();
-                const formattedDate = dateObject.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                
-                return {
-                    id: doc.id,
-                    ...data,
-                    category: data.type === 'kebijakan' ? 'Kebijakan' : 'Program',
-                    title: data.title, 
-                    description: data.description,
-                    date: formattedDate,
-                    votes: (data.votesYes + data.votesNo) || 0, 
-                };
-            });
-             
-            const commentsCollection = collection(db, 'posts');  
-            const commentsQuery = query(commentsCollection, where('authorId', '==', userId)); 
+            
+            // Fetch comments (tidak berubah)
+            const commentsQuery = query(collection(db, 'posts'), where('authorId', '==', userId)); 
             const commentsSnapshot = await getDocs(commentsQuery);
             const commentsCount = commentsSnapshot.size;
-             
-            setUserReports(reports);
+            
+            // LOGIKA BARU YANG LEBIH SIMPEL
+            // Query untuk menghitung laporan yang DIBUAT oleh user
+            const createdReportsQuery = query(
+                collection(db, 'laporan'), // Langsung ke koleksi 'laporan'
+                where('authorId', '==', userId)
+            );
+            
+            const createdReportsSnapshot = await getDocs(createdReportsQuery);
+            const createdReportsCount = createdReportsSnapshot.size; // Cukup hitung jumlah dokumennya
+            
+            // Update state dengan data yang baru
             setStats({ 
                 votes: votesCount, 
-                reports: reports.length, 
+                createdReports: createdReportsCount,
                 comments: commentsCount,
             });
 
         } catch (error) {
             console.error("Error fetching user dashboard data:", error); 
-            setStats({ votes: 0, reports: 0, comments: 0 });
+            setStats({ votes: 0, createdReports: 0, comments: 0 });
         } finally {
             setLoadingReports(false);
         }
@@ -93,93 +92,89 @@ const UserDashboard = () => {
         }
     }, [currentUser, fetchUserData]);
     
-    if (authLoading) {
+    if (authLoading || loadingReports) {
         return (
             <MainLayout>
-                <div className="flex justify-center items-center h-[50vh]">
-                    <Loader2 size={32} className="animate-spin text-primary" />
-                    <p className="ml-3 text-lg text-gray-600">Memuat data pengguna...</p>
+                <div className="flex justify-center items-center min-h-screen">
+                    <div className="text-center">
+                        <Loader2 size={48} className="animate-spin text-blue-600 mx-auto mb-4" />
+                        <p className="text-lg text-gray-600 font-medium">Memuat data pengguna...</p>
+                    </div>
                 </div>
             </MainLayout>
         );
     }
-      
+
+    const backgroundStyle = { 
+        backgroundImage: `url('/bg-userdashboard.svg')`, 
+        backgroundPosition: 'right', 
+        backgroundRepeat: 'no-repeat', 
+    };
 
     return (
         <MainLayout>
-            <div className="space-y-8">
-                 
-                <div 
-                    className="bg-white rounded-3xl shadow-lg p-6 sm:p-10 relative overflow-hidden border border-gray-100
-                               /* Gambar hanya muncul di layar md: ke atas */
-                               md:bg-[url('/bg-userdashboard.svg')] md:bg-right md:bg-no-repeat"
-                > 
-                    <div className="relative z-10">
-                        <p className="text-sm sm:text-base text-gray-600 mt-6 md:mt-0">Halo, {userData?.fullName || 'Warga Negara'}</p>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mt-1 mb-2">
-                            Siap berpartisipasi hari ini?
-                        </h1>
-                        <p className="text-sm text-gray-500">
-                            Kamu sudah vote {stats.votes}x minggu ini
-                        </p>
-                    </div>
-                </div>
- 
-                <div className="grid grid-cols-3 gap-4 sm:gap-6">
-                    {statsVisuals.map((stat, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-md p-3 sm:p-6 text-center border border-gray-100">
-                            {/* Menyesuaikan ukuran font untuk mobile */}
-                            <p className={`text-xl sm:text-4xl font-extrabold ${stat.color} mb-1`}>
-                                {stats[stat.key]}
-                            </p>
-                            {/* Menyesuaikan ukuran font untuk mobile */}
-                            <p className="text-[10px] sm:text-sm text-gray-600 leading-tight">
-                                {stat.label}
-                            </p>
-                            <span className="text-xs font-semibold text-gray-400 mt-2 block">{stat.unit}</span>
-                        </div>
-                    ))}
-                </div>
- 
-                <section className="space-y-4">
-                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                            Ringkasan Laporan Saya
-                        </h2>
-                        <Link to="/laporan" className="flex items-center text-sm font-semibold bg-primary text-white py-1 px-4 rounded-full hover:bg-red-700 transition-colors">
-                            <Filter size={16} className="mr-1" />
-                            Lihat Semua
-                        </Link>
-                    </div>
-                    
-                    {loadingReports ? (
-                        <div className="flex justify-center py-10">
-                             <Loader2 size={24} className="animate-spin text-primary" />
-                        </div>
-                    ) : userReports.length === 0 ? (
-                        <p className="text-gray-500 text-base text-center py-10">
-                            Anda belum membuat laporan/kebijakan.
-                        </p>
-                    ) : (
-                        <UserReportCard>
-                            {userReports.slice(0, 5).map(report => (
-                                <div key={report.id} className="inline-block pr-4 last:pr-0 align-top w-[calc(100vw-4rem)] sm:w-[340px] md:w-[380px]">
-                                    <Card 
-                                        {...report}
-                                        isAdmin={false} 
-                                    /> 
-                                </div>
-                            ))} 
-                            <div className="inline-flex items-center justify-center h-full w-[calc(100vw-4rem)] sm:w-[150px] md:w-[150px] ml-4">
-                                <Link to="/laporan" className="flex flex-col items-center text-primary hover:text-red-700 transition-colors text-center text-sm font-semibold">
-                                    Lihat Semua Laporan
-                                    <ChevronRight size={18} className="mt-1" />
-                                </Link>
+            <div className="min-h-screen">
+                <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8">
+                     
+                    <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-10 relative overflow-hidden border border-gray-100"
+                    style={backgroundStyle}> 
+                        <div className="relative z-10">
+                            <div className="flex items-center mb-3">
+                                <Activity className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary" />
+                                <span className="text-xs sm:text-sm font-medium text-primary">
+                                    Dashboard Personal
+                                </span>
                             </div>
-                        </UserReportCard>
-                    )}
-                </section>
-
+                            <p className="text-xs sm:text-sm text-gray-700 mb-1">
+                                Halo, {userData?.fullName || 'Warga Negara'}
+                            </p>
+                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
+                                Siap berpartisipasi hari ini?
+                            </h1>
+                            <div className="flex items-center">
+                                <TrendingUp className="w-4 h-4 mr-2 text-primary" />
+                                <p className="text-xs sm:text-sm text-black">
+                                    Kamu sudah vote {stats.votes}x minggu ini
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+                        {statsVisuals.map((stat, index) => {
+                            const IconComponent = stat.icon;
+                            return (
+                                <div 
+                                    key={index} 
+                                    className={`${stat.bgColor} rounded-xl shadow-lg p-4 sm:p-6 border border-white/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center mb-2">
+                                                <IconComponent className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${stat.color}`} />
+                                                <span className="text-xs sm:text-sm font-medium text-gray-600">
+                                                    {stat.label}
+                                                </span>
+                                            </div>
+                                            <p className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${stat.color} mb-1`}>
+                                                {stats[stat.key].toLocaleString('id-ID')}
+                                            </p>
+                                            <p className="text-xs text-gray-500 leading-tight">
+                                                {stat.sublabel}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+ 
+                    <section className="space-y-4 sm:space-y-6">
+                        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100">
+                            <LaporList kategori={"Laporan Anda"} />
+                        </div>
+                    </section>
+                </div>
             </div>
         </MainLayout>
     );

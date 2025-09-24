@@ -4,12 +4,26 @@ import { doc, getDoc, increment, updateDoc, writeBatch } from "firebase/firestor
 import { auth, db } from "../../firebase";
 import { MapPin, User } from "lucide-react";
 import { useAuth } from "../../hooks/AuthContext";
+import { useLapor } from "./hooks/useLapor";
+import StatusModel from "./component/statusModal";
+import PolicyDiscussionList from "../discussion/PolicyDiscussionList";
+import DiscussionForm from "../discussion/DiscussionForm";
 
 export default function LaporDetail(){
+    const [isDiscussion, setIsDiscussion] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const { currentUser } = useAuth();
     const { laporanId } = useParams()
     const { userData } = useAuth()
+    const { isAdmin, setShowStatus, analisisLaporan, fetchDiskusi, hasilLaporAnalisis, showAnalisis, setShowAnalisis } = useLapor()
+
+    const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const [laporan, setLaporan] = useState([])
+
+    const triggerRefresh = () => setRefreshKey(prevKey => prevKey + 1);
 
     async function fetchData(){
         const docRef = doc(db, `laporan/${laporanId}`);
@@ -47,6 +61,8 @@ export default function LaporDetail(){
             batch.set(pendukungRef, { createdAt: new Date() });
 
             await batch.commit();
+
+            fetchData()
             
             console.log("Upvote berhasil!");
 
@@ -55,15 +71,52 @@ export default function LaporDetail(){
         }
     }
 
+    async function handleStatus(newStatus){
+        try {
+            const laporanRef = doc(db, "laporan", laporanId);
+
+            await updateDoc(laporanRef, {
+                status: newStatus
+            });
+
+            fetchData()
+
+        } catch (error) {
+            console.error("Error updating document status: ", error);
+        }
+    }
+
     useEffect(() => {
         fetchData()
+        fetchDiskusi(laporanId)
     }, [])
 
+    const fetchLaporan = async () => {
+        const docRef = doc(db, "laporan", laporanId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            setLaporan({ id: docSnap.id, ...docSnap.data() });
+        } else {
+            console.log("Laporan tidak ditemukan!");
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchLaporan();
+    }, [laporanId, refreshKey]);
+
+    if (loading) return <p>Memuat laporan...</p>;
+    if (!laporan) return <p>Laporan tidak ditemukan.</p>;
+
+    const textAnalisisButton = hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen"
+
     return(
-        <div className="h-full w-full grid grid-cols-5 gap-5">
+        <div className="h-full w-full flex flex-col lg:grid lg:grid-cols-5 gap-5">
+            <StatusModel handleStatus={handleStatus}/>
             <div className="flex flex-col col-span-3 bg-white h-full w-full rounded-2xl border-2 p-5 gap-10 shadow-xl">
                 <img src={laporan.fileURL} alt="image masalah" className="aspect-video h-1/2 w-auto object-contain bg-black rounded-2xl"/>
-                <div className="flex flex-row w-full items-center justify-evenly">
+                <div className="flex sm:flex-row flex-col gap-5 w-full items-center justify-evenly">
                     <div className="flex flex-row gap-2 text-sm">
                         <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.status}</p>
                         <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.kategori}</p>
@@ -76,7 +129,7 @@ export default function LaporDetail(){
                         <User />
                         <div className="flex flex-row gap-2">
                             <p>{laporan.pendukung}</p>
-                            <p className="text-black">orang mendukung laporan ini</p>
+                            <p className="text-black">Pendukung</p>
                         </div>
                     </div>
                 </div>
@@ -85,22 +138,101 @@ export default function LaporDetail(){
                         <h1 className="text-4xl font-bold">{laporan.judul}</h1>
                         <p className="text-gray-400">{laporan.deskripsi}</p>
                     </div>
-                    <button onClick={() => upVote()} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Berikan suara untuk laporan ini</button>
+                    {isAdmin ? 
+                        <div className="flex flex-col w-full gap-2">
+                            <button onClick={() => {hasilLaporAnalisis ? setShowAnalisis(true) : analisisLaporan()}} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">{textAnalisisButton}</button>
+                            <button onClick={() => setShowStatus(true)} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Tindak Lanjuti</button>
+                        </div>
+                        :
+                        <button onClick={() => upVote()} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Berikan suara untuk laporan ini</button>
+                    }
                 </div>
             </div>
-            <div className="bg-white rounded-2xl h-full w-full border-2 shadow-2xl p-5 col-span-2 gap-3 flex flex-col">
-                <div className="flex flex-col p-2">
-                    <h2 className="text-2xl font-semibold">Ruang Aspirasi Warga</h2>
-                    <p className="text-gray-400 text-sm">Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.</p>
-                </div>
-                <div className="flex flex-row w-full justify-between">
-                    <input type="text" placeholder="Cari Aspirasi..." className="border-2 w-2/3 rounded-full p-2 px-3 focus:border-primary"/>
-                    <button className="w-fit bg-primary text-white rounded-full hover:bg-secondary p-2 px-3">Berikan Aspirasi</button>
-                </div>
-                <div>
-                    chat nanti
-                </div>
+
+            
+            
+            {/* bagian diskusi */}
+            <div className="lg:col-span-2 bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
+                {hasilLaporAnalisis && showAnalisis ?
+                    <div className="flex flex-col p-5 gap-10">
+                        <h1 className="text-3xl font-bold">Hasil Analisis Sentimen</h1>
+                        <p className="text-justify">{hasilLaporAnalisis}</p>
+                        <button onClick={() => setShowAnalisis(false)} className="bg-secondary hover:bg-primary rounded-full p-2 px-4 text-white duration-150">Tutup Analisis</button>
+                    </div>
+                :
+                    <>
+                    <div className="pt-4 px-5 md:pt-0 md:px-0 space-y-4">
+                        {/* Bagian Judul */}
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-bold text-slate-900">
+                                Ruang Aspirasi Warga
+                            </h2>
+                                    
+                            <p className="text-slate-500 text-xs">
+                                Bagikan pendapat Anda, baca pandangan warga lain, dan ikut berdiskusi dengan sehat.
+                            </p>
+                        </div>
+                                
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <input 
+                                type="text" 
+                                placeholder="Pilih topik laporan terkini" 
+                                className="
+                                    w-full px-4 py-1 md:py-2 bg-slate-50 border border-red-800 text-slate-800
+                                    placeholder-slate-400 rounded-full
+                                    focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent
+                                    transition duration-300 ease-in-out
+                                "
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+
+                            <button 
+                                type="button"
+                                disabled={!currentUser}
+                                onClick={() => setIsDiscussion(true)}
+                                aria-label="Kirim Aspirasi"
+                                className="
+                                    flex items-center justify-center gap-2 w-full sm:w-auto text-xs flex-shrink-0
+                                    px-4 py-2 rounded-full bg-primary text-white font-semibold shadow-md
+                                    hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                                    transition-all duration-300 ease-in-out transform hover:scale-105
+                                    disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+                                "
+                            >
+                                <span>Berikan Aspirasi</span>
+                            </button>
+                        </div>
+                    </div>
+                    </>
+                }
+            
+
+            <hr className="h-1"/>
+                        
+            {/* Bagian untuk menampilkan form diskusi (Modal/Component) */}
+            {laporan && isDiscussion && (
+                <DiscussionForm
+                    isOpen={isDiscussion}
+                    onClose={() => setIsDiscussion(false)}
+                    sourceId={laporan.id}
+                    sourceCollection="laporan"
+                    additionalData={{ 
+                        sourceType: "laporan", 
+                        kategori: laporan.kategori
+                    }}
+                    onDiscussionAdded={triggerRefresh}  
+                />
+            )}
+            
+            <div className="space-y-4  border-slate-200/80">
+                <PolicyDiscussionList 
+                    sourceId={laporan.id}
+                    searchTerm={searchTerm}
+                    refreshKey={refreshKey}
+                />
             </div>
         </div>
-    )
+    </div>
+)
 }

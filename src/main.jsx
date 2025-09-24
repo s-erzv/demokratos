@@ -23,6 +23,7 @@ import LaporPage from './pages/LaporPage.jsx';
 import AdminRoute from './components/AdminRoute.jsx';  
 import LaporDetailPage from './pages/LaporDetailPage.jsx'; 
 import { PolicyProvider } from './features/policy-voting/hooks/usePolicy.jsx';
+import AdminRoute from './components/AdminRoute.jsx';   
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -77,8 +78,14 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             } 
           />
-          
-          
+          <Route 
+            path="/laporan/all" 
+            element={
+              <ProtectedRoute>
+                <LaporLengkapPage/> 
+              </ProtectedRoute>
+       
+            }   />
           <Route
             path='/policies/all'
             element={

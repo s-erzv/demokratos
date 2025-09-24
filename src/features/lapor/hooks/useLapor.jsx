@@ -1,30 +1,27 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, db, storage } from "../../../firebase";
-import { addDoc, collection, doc, getDocs, updateDoc } from "firebase/firestore";
+import { auth, db, LaporanModel, storage } from "../../../firebase";
+import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { useAuth } from "../../../hooks/AuthContext";
 
 const LaporContext = createContext()
 
 export const LaporProvider = ({ children }) => {
 
-    const [data, setData] = useState([])
+    const { userData } = useAuth()
 
-    useEffect(() => {
-        fetchLaporan()
-    },[])
+    const isAdmin = userData?.role === "admin"
 
-    async function fetchLaporan() {
-        try {
-            const querySnapshot = await getDocs(collection(db, "laporan"));
-            const laporans = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            setData(laporans)
-        } catch (error) {
-            console.error(error)
-        }
-    }
+    const [loading, setLoading] = useState(false)
+
+    const [sort, setSort] = useState("")
+
+    const [refreshLaporan, setRefreshLaporan] = useState(false)
+
+    const [search, setSearch] = useState("")
+    const [filter, setFilter] = useState("")
+
+    const [showStatus, setShowStatus] = useState(false)
 
     const [show, setShow] = useState(false)
     const [kategori, setKategori] = useState("")
@@ -49,7 +46,9 @@ export const LaporProvider = ({ children }) => {
 
                 const photoURL = await getDownloadURL(imageRef)
 
-                const docRef = await addDoc(collection(db, "laporan"), {
+                const newLaporanRef = doc(collection(db, "laporan"));
+                
+                const laporanData = {
                     judul: judul,
                     deskripsi: deskripsi,
                     kategori: kategori,
@@ -57,16 +56,18 @@ export const LaporProvider = ({ children }) => {
                     alamat: alamat,
                     status: "Baru diajukan",
                     pendukung: 0,
-                    authorId: user.uid
-                })
+                    authorId: user.uid,
+                    discussionCount: 0,
+                    docId: newLaporanRef.id,
+                    createdAt: serverTimestamp() 
+                };
 
-                await updateDoc(docRef, {
-                    docId: docRef.id
-                });
+                await setDoc(newLaporanRef, laporanData);
 
                 console.log("Laporan berhasil dibuat")
                 setShow(false)
                 resetForm()
+                setRefreshLaporan(refreshLaporan + 1)
             } catch (error) {
                 console.error(error);
             }
@@ -83,8 +84,36 @@ export const LaporProvider = ({ children }) => {
         setAlamat("")
     }
 
+    const [currentDiskusi, setCurrentDiskusi] = useState([])
+    const [hasilLaporAnalisis, setHasillaporAnalisis] = useState("")
+    const [showAnalisis, setShowAnalisis] = useState(false)
+
+    async function fetchDiskusi(LaporanId){
+        const q = query(collection(db, "posts"), where("sourceId", "==", LaporanId))
+        const querySnapshot = await getDocs(q)
+        const diskusiData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }))
+        console.log(diskusiData)
+        setCurrentDiskusi(diskusiData)
+    }
+
+    async function analisisLaporan(){
+        const data = JSON.stringify(currentDiskusi)
+
+        const prompt = `Coba berikan analisis berdasarkan data diskusi berikut ini: ${data}`
+
+        const result = await LaporanModel.generateContent(prompt)
+
+        const response = result.response
+        const text = response.text()
+        setHasillaporAnalisis(text)
+        setShowAnalisis(true)
+    }
+
     return(
-        <LaporContext.Provider value={{ show, setShow, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, data }}>
+        <LaporContext.Provider value={{ show, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )

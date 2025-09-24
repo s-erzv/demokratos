@@ -185,7 +185,7 @@ const PolicyVoting = () => {
           <div className="relative z-10 max-w-2xl">
              
             {/* Judul Header: Kecil di mobile, besar di desktop */}
-            <h1 className="text-xl mt-4 md:mt-0 sm:text-3xl md:text-4xl font-extrabold text-gray-800">
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-gray-800">
                 Voting Kebijakan
             </h1>
 

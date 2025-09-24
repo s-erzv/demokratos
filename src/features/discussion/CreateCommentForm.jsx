@@ -75,20 +75,41 @@ const CreateCommentForm = ({ postId, parentCommentId = null, onCommentAdded }) =
   }
   
   return (
-    <form onSubmit={handleSubmit} className="mt-6 mb-8">
-      <textarea
-        className="w-full p-3 border rounded-md"
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      
+      {/* 1. MENGGANTI TEXTAREA DENGAN INPUT
+        - Menggunakan <input> biasa namun dengan padding (py-3) agar terlihat lebih tinggi.
+        - Styling disesuaikan dengan form lain yang sudah kita buat (background lembut, border, dan ring saat focus).
+      */}
+      <input
+        type="text"
+        className="w-full px-5 py-3 bg-slate-100/70 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary transition"
         placeholder="Tulis balasan Anda..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        rows="4"
       />
-
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-
-      <button type="submit" disabled={loading} className="mt-3 px-6 py-2 bg-red-800 text-white font-semibold rounded-md">
-        {loading ? 'Mengirim...' : 'Kirim Balasan'}
-      </button>
+  
+      {/* 2. BARIS AKSI (ACTION ROW)
+        - Menggunakan Flexbox ('flex') untuk menyejajarkan pesan error dan tombol.
+        - 'justify-between' mendorong pesan error ke kiri dan tombol ke kanan.
+        - Dibuat responsif ('flex-col sm:flex-row') agar tombol berada di bawah pesan error pada layar mobile.
+      */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-1">
+        
+        {/* Pesan Error (di sebelah kiri) */}
+        <div className="w-full text-left">
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+        </div>
+        
+        {/* Tombol Kirim (di sebelah kanan) */}
+        <button 
+          type="submit" 
+          disabled={loading} 
+          className="w-full sm:w-auto px-6  py-2 bg-primary text-white font-semibold rounded-full shadow-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
+        >
+          {loading ? 'Mengirim...' : 'balas'}
+        </button>
+      </div>
     </form>
   );
 };

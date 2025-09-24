@@ -1,12 +1,12 @@
 import MainLayout from "../components/MainLayout";
 import { LaporProvider } from "../features/lapor/hooks/useLapor";
-import LaporDetail from "../features/lapor/laporDetail";
+import LaporLengkap from "../features/lapor/laporLengkap";
 
-export default function LaporDetailPage(){
+export default function LaporLengkapPage(){
     return(
         <LaporProvider>
             <MainLayout>
-                <LaporDetail/>
+                <LaporLengkap/>
             </MainLayout>
         </LaporProvider>
     )

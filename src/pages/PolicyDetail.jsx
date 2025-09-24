@@ -1,20 +1,24 @@
+// src/pages/PolicyDetail.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout from '../components/MainLayout';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { db } from '../firebase';  
-import { doc, getDoc } from 'firebase/firestore'; 
+import { db } from '../firebase'; // db masih dibutuhkan untuk fetch data policy
+import { doc, getDoc } from 'firebase/firestore'; // import yang relevan masih dipertahankan
 import { Loader2, Users, Download, ArrowLeft, BarChart3, Search, Send } from 'lucide-react';
 import VotingModal from '../components/VotingModal';
-import { useVoting } from '../features/policy-voting/hooks/useVoting';
+import { useVoting } from '../hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
 import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
-import { usePolicy } from '../features/policy-voting/hooks/usePolicy';  
+import DiscussionForm from '../features/discussion/DiscussionForm';
+import { usePolicy } from '../features/policy-voting/hooks/usePolicy'; // <-- 1. IMPORT HOOK BARU
 
 const PolicyDetail = () => {
     const { policyId } = useParams();
     const navigate = useNavigate();
     const { currentUser, isAdmin } = useAuth();
-     
+    
+    // 2. GUNAKAN HOOK usePolicy UNTUK MENGAMBIL STATE & FUNGSI
     const {
         sentimentReport,
         loadingAnalysis,
@@ -22,14 +26,21 @@ const PolicyDetail = () => {
         setShowAnalysis,
         analyzePolicySentiment
     } = usePolicy();
- 
+
+    // State lokal yang masih dibutuhkan
     const [policy, setPolicy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [hasVoted, setHasVoted] = useState(false);
     const [isDiscussion, setIsDiscussion] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [refreshKey, setRefreshKey] = useState(0);  
+    const [refreshKey, setRefreshKey] = useState(0); // Untuk me-refresh diskusi
+
+    // Hapus state lama yang sudah dipindah ke hook
+    // const [sentimentReport, setSentimentReport] = useState(null);
+    // const [loadingReport, setLoadingReport] = useState(false);
+    // const [errorReport, setErrorReport] = useState(null);
+
     const checkUserVoteStatus = useCallback(async (id) => {
         if (!currentUser || !id) {
             setHasVoted(false);
@@ -75,7 +86,8 @@ const PolicyDetail = () => {
             setLoading(false);
         }
     }, [policyId, currentUser, checkUserVoteStatus]);
- 
+
+    // Hapus fungsi fetchSentimentReport lama
     
     const triggerRefresh = () => {
         setRefreshKey(prevKey => prevKey + 1); 
@@ -83,7 +95,7 @@ const PolicyDetail = () => {
 
     const handleRefetch = useCallback(() => {
         fetchPolicyData();
-        setShowAnalysis(false); 
+        setShowAnalysis(false); // <-- 3. Ganti dengan fungsi dari hook
     }, [fetchPolicyData, setShowAnalysis]);
 
     const {
@@ -203,12 +215,13 @@ const PolicyDetail = () => {
                         <p className="text-xs text-gray-500 mb-3">Voting berakhir: {policyData.formattedDeadline}</p>
                         
                         {isAdmin ? (
-                            <button 
+                            <button
+                                // 4. PANGGIL FUNGSI DARI HOOK
                                 onClick={() => analyzePolicySentiment(policyId)}
                                 disabled={loadingAnalysis || totalVotes === 0}
                                 className="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-secondary transition-colors disabled:bg-gray-400 flex items-center justify-center"
                             >
-                                {loadingAnalysis ? ( 
+                                {loadingAnalysis ? ( // 5. GUNAKAN STATE LOADING DARI HOOK
                                     <Loader2 size={20} className="mr-2 animate-spin" />
                                 ) : (
                                     <>
@@ -223,12 +236,14 @@ const PolicyDetail = () => {
                             </button>
                         )}
                     </div>
-                     
+                    
+                    {/* 6. GUNAKAN STATE DARI HOOK UNTUK MENAMPILKAN/MENYEMBUNYIKAN KARTU */}
                     {(isAdmin && showAnalysis) ? (
                         <div className="bg-white p-6 rounded-xl shadow-lg space-y-4">
                             <h2 className="text-xl font-bold text-primary border-b pb-3 flex items-center">
                                 <BarChart3 size={20} className="mr-2" /> Laporan Sentimen
-                            </h2> 
+                            </h2>
+                            {/* sentimentReport sekarang bisa berisi pesan sukses atau error */}
                             <div className="text-sm whitespace-pre-line text-left text-gray-700">
                                 <div className="font-sans leading-relaxed p-3 bg-gray-50 rounded-lg whitespace-pre-wrap overflow-x-auto text-left">
                                     <ParsedText text={sentimentReport} />
@@ -269,7 +284,19 @@ const PolicyDetail = () => {
                             </div>
                             <hr className=''/>
 
-                        
+                            {policy && isDiscussion && (
+                                <DiscussionForm
+                                    isOpen={isDiscussion}
+                                    onClose={() => setIsDiscussion(false)}
+                                    sourceId={policy.id}
+                                    additionalData={{ 
+                                        sourceType: "policy", 
+                                        type: policy.type 
+                                    }}
+                                    onDiscussionAdded={triggerRefresh}
+                                    sourceCollection="policies"
+                                />
+                            )}
                             <div className="space-y-4 border-slate-200/80">
                                 <PolicyDiscussionList 
                                     sourceId={policy.id}
