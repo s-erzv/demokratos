@@ -38,7 +38,7 @@ export default function Header({sort}){
                         />
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
                     </div>
-                    <div className="flex flex-row gap-3">
+                    <div className="md:flex md:flex-row gap-4 grid grid-cols-2">
                         <div className="flex flex-col relative">
                             <button onClick={() => setShowFilter(prev => !prev)} className="bg-secondary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
                                 Filter
@@ -53,7 +53,7 @@ export default function Header({sort}){
                             </button>
                             <SortList seeMore={showSort} setSeeMore={setShowSort}/>
                         </div>
-                        <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors h-fit`}>
+                        <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors h-fit max-md:col-span-2`}>
                             Lapor
                         </button>
                     </div>
