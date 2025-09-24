@@ -128,9 +128,9 @@ export default function LaporDetail(){
             <div className="flex flex-col col-span-3 bg-white h-full w-full rounded-2xl border-2 p-5 gap-10 shadow-xl">
                 <img src={laporan.fileURL} alt="image masalah" className="aspect-video h-1/2 w-auto object-contain bg-black rounded-2xl"/>
                 <div className="flex sm:flex-row flex-col gap-5 w-full items-center justify-evenly">
-                    <div className="flex flex-row gap-2 text-sm">
-                        <p className={`${statusClass} w-fit rounded-full p-1 px-2`}>{laporan.status}</p>
-                        <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.kategori}</p>
+                    <div className="flex flex-row gap-2 text-sm items-center text-center">
+                        <p className={`${statusClass} w-fit rounded-2xl p-1 px-2`}>{laporan.status}</p>
+                        <p className="bg-gray-300 w-fit rounded-2xl p-1 px-2">{laporan.kategori}</p>
                     </div>
                     <div className="flex flex-row text-primary gap-2">
                         <MapPin />
