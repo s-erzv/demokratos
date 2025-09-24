@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, UploadCloud, ChevronDown, Loader2, PlusCircle } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext'; 
-import { useCreatePolicy } from '../../hooks/useCreatePolicy'; 
+import { useCreatePolicy } from './hooks/useCreatePolicy'; 
 
 const InputStyle = "w-full border border-gray-300 rounded-full py-2.5 px-4 bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all";
 const LabelStyle = "text-sm font-medium text-gray-700 block mb-1";

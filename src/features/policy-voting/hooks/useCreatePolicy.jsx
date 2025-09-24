@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { storage, functions } from '../firebase'; 
+import { storage, functions } from '../../../firebase'; 
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuth } from './AuthContext'; 
+import { useAuth } from '../../../hooks/AuthContext'; 
  
 const CF_URL = 'https://us-central1-demokratos-5b0ce.cloudfunctions.net/submitPolicy'; 
 

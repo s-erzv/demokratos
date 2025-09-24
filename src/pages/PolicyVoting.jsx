@@ -6,7 +6,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { PlusCircle, Search, SlidersHorizontal, Loader2, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Card from '../components/Card'; 
-import { usePolicyActions } from '../hooks/usePolicyActions'; 
+import { usePolicyActions } from '../features/policy-voting/hooks/usePolicyActions'; 
 
 const HorizontalScrollContainer = ({ children }) => (
   <div className="overflow-x-auto whitespace-nowrap pb-4" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
@@ -184,12 +184,10 @@ const PolicyVoting = () => {
 
           <div className="relative z-10 max-w-2xl">
              
-            {/* Judul Header: Kecil di mobile, besar di desktop */}
             <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-gray-800">
                 Voting Kebijakan
             </h1>
 
-            {/* Paragraf Header: Kecil di mobile, besar di desktop */}
             <p className="text-sm sm:text-lg text-gray-600 mt-2">
               Baca, pahami, lalu berikan suara Anda. Partisipasi Anda adalah wujud demokrasi.
             </p>

@@ -2,11 +2,13 @@ import { ChevronDown, Search } from "lucide-react";
 import { useLapor } from "../hooks/useLapor";
 import FilterList from "./subComponent/filterList";
 import { useState } from "react";
+import SortList from "./subComponent/sortList";
 
-export default function Header(){
+export default function Header({sort}){
     const { setShow, isAdmin, setSearch, search} = useLapor()
 
     const [showFilter, setShowFilter] = useState(false)
+    const [showSort, setShowSort] = useState(false)
 
     return(
         <header className="bg-white rounded-xl shadow-lg p-6 md:px-10 md:py-20 relative mb-10">
@@ -36,7 +38,7 @@ export default function Header(){
                         />
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
                     </div>
-                    <div className="flex flex-row gap-3">
+                    <div className="md:flex md:flex-row gap-4 grid grid-cols-2">
                         <div className="flex flex-col relative">
                             <button onClick={() => setShowFilter(prev => !prev)} className="bg-secondary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
                                 Filter
@@ -44,7 +46,14 @@ export default function Header(){
                             </button>
                             <FilterList seeMore={showFilter} setSeeMore={setShowFilter}/>
                         </div>
-                        <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors h-fit`}>
+                        <div className={`${sort ? "" : "hidden"} flex flex-col relative`}>
+                            <button onClick={() => setShowSort(prev => !prev)} className="bg-secondary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors">
+                                Sort
+                                <ChevronDown />
+                            </button>
+                            <SortList seeMore={showSort} setSeeMore={setShowSort}/>
+                        </div>
+                        <button onClick={() => setShow(true)} className={`${isAdmin ? "hidden" : ""} bg-primary text-white border border-white font-semibold py-2 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-red-800 transition-colors h-fit max-md:col-span-2`}>
                             Lapor
                         </button>
                     </div>

@@ -45,6 +45,20 @@ const LaporanModel = getGenerativeModel(ai, {
   `
 });
 
+const PolicyModel = getGenerativeModel(ai, { 
+  model: "gemini-2.5-flash",
+  systemInstruction: 
+  `
+    Kamu adalah asisten seorang penjabat negara Indonesia. Kamu berfungsi untuk menganalisis dan meringkas aspirasi dari rakyat
+    mengenai kebijakan pemerintah yang diberikan. Berikan hasil analisis dengan singkat dan ringkas. Yang terpenting adalah akurat dan sesuai
+    dengan suara rakyat.
+    
+    Hindari menggunakan **, penomeran, atau tanda tanda lainnya, cukup pake kalimat aja. untuk alternatif penomeran, mungkin
+    pake paragraf aja.
+  `
+});
+
+
 
 export {
   db,
@@ -52,4 +66,5 @@ export {
   functions,
   storage,
   LaporanModel,
+  PolicyModel
 };

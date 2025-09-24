@@ -1,43 +1,51 @@
+// src/pages/PolicyDetail.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout from '../components/MainLayout';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { db, functions } from '../firebase';
-import { doc, getDoc, collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
-import { Loader2, Users, Download, ThumbsUp, ThumbsDown, Send, ArrowLeft, Bot, Search, BarChart3 } from 'lucide-react';
+import { db } from '../firebase'; // db masih dibutuhkan untuk fetch data policy
+import { doc, getDoc } from 'firebase/firestore'; // import yang relevan masih dipertahankan
+import { Loader2, Users, Download, ArrowLeft, BarChart3, Search, Send } from 'lucide-react';
 import VotingModal from '../components/VotingModal';
-import { useVoting } from '../hooks/useVoting';
+import { useVoting } from '../features/policy-voting/hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
 import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
 import DiscussionForm from '../features/discussion/DiscussionForm';
+import { usePolicy } from '../features/policy-voting/hooks/usePolicy'; // <-- 1. IMPORT HOOK BARU
 
 const PolicyDetail = () => {
     const { policyId } = useParams();
     const navigate = useNavigate();
     const { currentUser, isAdmin } = useAuth();
-    const [refreshKey, setRefreshKey] = useState(0);
+    
+    // 2. GUNAKAN HOOK usePolicy UNTUK MENGAMBIL STATE & FUNGSI
+    const {
+        sentimentReport,
+        loadingAnalysis,
+        showAnalysis,
+        setShowAnalysis,
+        analyzePolicySentiment
+    } = usePolicy();
 
+    // State lokal yang masih dibutuhkan
     const [policy, setPolicy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [hasVoted, setHasVoted] = useState(false);
-
     const [isDiscussion, setIsDiscussion] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    
+    const [refreshKey, setRefreshKey] = useState(0); // Untuk me-refresh diskusi
 
-    const [sentimentReport, setSentimentReport] = useState(null);
-    const [loadingReport, setLoadingReport] = useState(false);
-    const [errorReport, setErrorReport] = useState(null);
-
-    const CF_SENTIMENT_URL = 'https://us-central1-demokratos-5b0ce.cloudfunctions.net/getSentimentAnalysis';
-
+    // Hapus state lama yang sudah dipindah ke hook
+    // const [sentimentReport, setSentimentReport] = useState(null);
+    // const [loadingReport, setLoadingReport] = useState(false);
+    // const [errorReport, setErrorReport] = useState(null);
 
     const checkUserVoteStatus = useCallback(async (id) => {
         if (!currentUser || !id) {
             setHasVoted(false);
             return;
         }
-
         try {
             const voteDocRef = doc(db, 'votes', `${currentUser.uid}_${id}`);
             const voteSnap = await getDoc(voteDocRef);
@@ -48,112 +56,47 @@ const PolicyDetail = () => {
         }
     }, [currentUser]);
 
-    
-
     const fetchPolicyData = useCallback(async () => {
         if (!policyId) return;
-
         setLoading(true);
         setError('');
-
         try {
             const policyDocRef = doc(db, 'policies', policyId);
             const docSnap = await getDoc(policyDocRef);
-
             if (docSnap.exists()) {
                 const data = docSnap.data();
-
                 const dateObject = data.dueDate ? data.dueDate.toDate() : new Date();
                 const formattedDeadline = dateObject.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
                 setPolicy({
                     id: docSnap.id,
                     ...data,
                     category: data.type === 'kebijakan' ? 'Kebijakan' : 'Program',
                     formattedDeadline,
                 });
-
                 if (currentUser) {
                     checkUserVoteStatus(docSnap.id);
                 }
-
             } else {
                 setError("Kebijakan tidak ditemukan.");
             }
         } catch (err) {
-            setError("Gagal memuat detail kebijakan. Periksa aturan Firestore.");
+            setError("Gagal memuat detail kebijakan.");
             console.error(err);
         } finally {
             setLoading(false);
         }
     }, [policyId, currentUser, checkUserVoteStatus]);
 
-    const fetchSentimentReport = useCallback(async () => {
-        if (!policyId) return;
-        setLoadingReport(true);
-        setErrorReport(null);
-        setSentimentReport(null);
-
-        try {
-            let q = collection(db, 'posts');
-
-            // 1. SELALU saring berdasarkan ID kebijakan/laporan
-            q = query(q, where("sourceId", "==", policyId));
-
-            // 2. JIKA ada input di search bar, tambahkan saringan keywords
-            if (searchTerm && searchTerm.trim() !== '') {
-                const searchKeywords = searchTerm.toLowerCase().split(' ').filter(word => word);
-                if (searchKeywords.length > 0) {
-                    // Gunakan array-contains-any untuk pencarian multi-kata
-                    q = query(q, where('keywords', 'array-contains-any', searchKeywords.slice(0, 10)));
-                }
-            }
-
-            // 3. SELALU urutkan hasilnya berdasarkan yang terbaru di akhir
-            q = query(q, orderBy('createdAt', 'desc'));
-
-            const querySnapshot = await getDocs(q);
-            const postsData = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            setPosts(postsData); // Asumsi kamu punya state 'posts' dan 'setPosts'
-
-        } catch (error) {
-            console.error("Error fetching posts for policy:", error);
-            // setError("Gagal memuat diskusi terkait."); // Kamu bisa tambahkan state error untuk posts
-            const response = await fetch(CF_SENTIMENT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ policyId }),
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.status === 'success' && result.report) {
-                setSentimentReport(result.report);
-            } else {
-                setErrorReport(result.report || result.message || 'Gagal mengambil laporan sentimen dari server.');
-                setSentimentReport(null);
-            }
-
-            console.error("Error fetching sentiment report:", err);
-            setErrorReport(`Koneksi gagal atau server error: ${err.message}`);
-        } finally {
-            setLoadingReport(false);
-        }
-    }, [policyId]);
-
+    // Hapus fungsi fetchSentimentReport lama
+    
     const triggerRefresh = () => {
         setRefreshKey(prevKey => prevKey + 1); 
     };
 
     const handleRefetch = useCallback(() => {
         fetchPolicyData();
-        setSentimentReport(null);
-        setErrorReport(null);
-    }, [fetchPolicyData]);
+        setShowAnalysis(false); // <-- 3. Ganti dengan fungsi dari hook
+    }, [fetchPolicyData, setShowAnalysis]);
 
     const {
         isModalOpen,
@@ -211,7 +154,6 @@ const PolicyDetail = () => {
     const ParsedText = ({ text }) => {
         if (!text) return null;
         const parts = text.split(/(\*[^*]+\*)/g);
-
         return (
             <>
                 {parts.map((part, index) => {
@@ -227,39 +169,23 @@ const PolicyDetail = () => {
 
     return (
         <MainLayout>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center justify-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start justify-center">
                 <div className="lg:col-span-2 space-y-6 lg:max-h-[95vh] lg:overflow-y-auto rounded-xl scrollbar-hide">
+                    {/* ... (Konten detail kebijakan tidak berubah) ... */}
                     <div className="bg-white p-6 rounded-xl shadow-lg">
                         <div className="h-56 w-full rounded-xl overflow-hidden shadow-lg relative">
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="absolute top-4 left-4 p-3 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors z-10"
-                                aria-label="Kembali"
-                            >
+                            <button onClick={() => navigate(-1)} className="absolute top-4 left-4 p-3 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors z-10" aria-label="Kembali">
                                 <ArrowLeft size={24} />
                             </button>
-                            <img
-                                src={policyData.thumbnailUrl}
-                                alt={policyData.title}
-                                className="w-full h-full object-cover"
-                            />
+                            <img src={policyData.thumbnailUrl} alt={policyData.title} className="w-full h-full object-cover" />
                         </div>
                         <span className="inline-block border border-primary bg-primary/10 mt-4 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-3">
                             {policyData.category}
                         </span>
-                        <h1 className="text-4xl font-extrabold text-gray-800 mb-4">
-                            {policyData.title}
-                        </h1>
-                        <p className="text-gray-700 whitespace-pre-line leading-relaxed mb-6">
-                            {policyData.description}
-                        </p>
+                        <h1 className="text-4xl font-extrabold text-gray-800 mb-4">{policyData.title}</h1>
+                        <p className="text-gray-700 whitespace-pre-line leading-relaxed mb-6">{policyData.description}</p>
                         {policyData.documentUrl && (
-                            <a
-                                href={policyData.documentUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-primary font-semibold hover:text-red-800 transition-colors"
-                            >
+                            <a href={policyData.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary font-semibold hover:text-red-800 transition-colors">
                                 <Download size={20} className="mr-2" />
                                 Download dokumen resmi
                             </a>
@@ -271,12 +197,7 @@ const PolicyDetail = () => {
                     <div className="bg-white p-6 rounded-xl shadow-lg text-center">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Hasil Voting Sementara</h2>
                         <div className="flex justify-center items-center h-32 w-32 mx-auto relative mb-6">
-                            <div
-                                className="w-full h-full rounded-full"
-                                style={{
-                                    background: `conic-gradient(#4CAF50 0% ${percentageYes}%, #F44336 ${percentageYes}% 100%)`
-                                }}
-                            />
+                            <div className="w-full h-full rounded-full" style={{ background: `conic-gradient(#4CAF50 0% ${percentageYes}%, #F44336 ${percentageYes}% 100%)` }} />
                             <div className="absolute inset-4 bg-white rounded-full flex flex-col justify-center items-center">
                                 <span className="text-xl font-extrabold text-primary">{percentageYes}%</span>
                                 <span className="text-sm text-gray-500">Setuju</span>
@@ -292,13 +213,15 @@ const PolicyDetail = () => {
                             <span className="ml-1">orang sudah berpartisipasi</span>
                         </div>
                         <p className="text-xs text-gray-500 mb-3">Voting berakhir: {policyData.formattedDeadline}</p>
+                        
                         {isAdmin ? (
                             <button
-                                onClick={fetchSentimentReport}
-                                disabled={loadingReport || totalVotes === 0}
+                                // 4. PANGGIL FUNGSI DARI HOOK
+                                onClick={() => analyzePolicySentiment(policyId)}
+                                disabled={loadingAnalysis || totalVotes === 0}
                                 className="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-secondary transition-colors disabled:bg-gray-400 flex items-center justify-center"
                             >
-                                {loadingReport ? (
+                                {loadingAnalysis ? ( // 5. GUNAKAN STATE LOADING DARI HOOK
                                     <Loader2 size={20} className="mr-2 animate-spin" />
                                 ) : (
                                     <>
@@ -308,32 +231,27 @@ const PolicyDetail = () => {
                                 )}
                             </button>
                         ) : (
-                            <button
-                                onClick={openModal}
-                                disabled={hasVoted || !currentUser}
-                                className="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-red-800 transition-colors disabled:bg-gray-400"
-                            >
+                            <button onClick={openModal} disabled={hasVoted || !currentUser} className="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-red-800 transition-colors disabled:bg-gray-400">
                                 {hasVoted ? 'Anda Sudah Berpartisipasi' : !currentUser ? 'Login untuk Berikan Suara' : 'Berikan Suara'}
                             </button>
                         )}
                     </div>
                     
-                    {(isAdmin && (sentimentReport || errorReport)) ? (
+                    {/* 6. GUNAKAN STATE DARI HOOK UNTUK MENAMPILKAN/MENYEMBUNYIKAN KARTU */}
+                    {(isAdmin && showAnalysis) ? (
                         <div className="bg-white p-6 rounded-xl shadow-lg space-y-4">
                             <h2 className="text-xl font-bold text-primary border-b pb-3 flex items-center">
                                 <BarChart3 size={20} className="mr-2" /> Laporan Sentimen
                             </h2>
-                            {errorReport && <p className="text-red-600 text-sm">{errorReport}</p>}
-                            {sentimentReport && (
-                                <div className="text-sm whitespace-pre-line text-left text-gray-700">
-                                    <div className="font-sans leading-relaxed p-3 bg-gray-50 rounded-lg whitespace-pre-wrap overflow-x-auto text-left">
-                                        <ParsedText text={sentimentReport} />
-                                    </div>
+                            {/* sentimentReport sekarang bisa berisi pesan sukses atau error */}
+                            <div className="text-sm whitespace-pre-line text-left text-gray-700">
+                                <div className="font-sans leading-relaxed p-3 bg-gray-50 rounded-lg whitespace-pre-wrap overflow-x-auto text-left">
+                                    <ParsedText text={sentimentReport} />
                                 </div>
-                            )}
+                            </div>
                         </div>
                     ) : (
-                        <div className="bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
+                         <div className="bg-white py-3 px-2 md:p-8 rounded-2xl shadow-lg space-y-6">
                             <div className="space-y-2 pt-4 px-4 md:p-0">
                                 <h2 className="text-xl font-bold text-slate-900">
                                     Ruang Aspirasi Warga
@@ -345,7 +263,7 @@ const PolicyDetail = () => {
                                     <div className="relative w-full">
                                         <input
                                             type="text"
-                                            placeholder="Tuliskan aspirasi atau cari topik diskusi..."
+                                            placeholder="Cari topik diskusi..."
                                             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-gray-300 text-slate-800 placeholder-slate-400 rounded-full focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent transition duration-300 ease-in-out text-sm"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -379,8 +297,8 @@ const PolicyDetail = () => {
                                     sourceCollection="policies"
                                 />
                             )}
-                            <div className="space-y-4 pt- border-slate-200/80">
-                                <PolicyDiscussionList
+                            <div className="space-y-4 border-slate-200/80">
+                                <PolicyDiscussionList 
                                     sourceId={policy.id}
                                     searchTerm={searchTerm}
                                     refreshKey={refreshKey}

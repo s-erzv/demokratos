@@ -1,11 +1,34 @@
-import { MapPin, User } from "lucide-react";
-import { redirect, useNavigate } from "react-router-dom";
+import { MapPin, Pencil, Trash, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../hooks/AuthContext";
+import { db } from "../../../firebase";
+import { deleteDoc, doc } from "firebase/firestore";
+import { useLapor } from "../hooks/useLapor";
 
-export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori, status, pendukung, id}){
+export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori, status, pendukung, id, authorId }){
     const navigate = useNavigate()
+    const { userData } = useAuth()
+    const { setRefreshLaporan, refreshlaporan } = useLapor()
+
+    const setting = authorId === userData.uid
+
+    async function handleDelete() {
+        try {
+            const docRef = doc(db, "laporan", id)
+            await deleteDoc(docRef)
+            console.log("berhasil hapus yeyyy")
+            setRefreshLaporan(prev => !prev)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return(
-        <div className="h-fit w-full bg-white border-2 rounded-2xl p-2 flex flex-col gap-3 shadow-md">
+        <div className="h-fit w-full bg-white border-2 rounded-2xl p-2 flex flex-col gap-3 shadow-md relative max-w-96">
+            <div className={`${setting ? "" : "hidden"} flex flex-row absolute top-0 right-0 p-5 gap-3`} >
+                <button className="bg-primary rounded-full aspect-square p-1 text-white hover:bg-secondary duration-150"><Pencil size={20}/></button>
+                <button onClick={() => handleDelete()} className="bg-primary rounded-full aspect-square p-1 text-white hover:bg-secondary duration-150"><Trash size={20}/></button>
+            </div>
             <img src={imageURL} alt={`${judul} image`} className="h-40 w-full rounded-2xl object-cover"/>
             <div className="flex flex-col px-2 gap-3 justify-between">
                 <div className="flex flex-row gap-2 text-[10px] ">
@@ -25,7 +48,7 @@ export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori,
                         <User className="text-primary"/>
                         <div className="flex flex-row gap-1 items-center">
                             <p className="text-primary">{pendukung}</p>
-                            <p> orang mendukung laporan ini</p>
+                            <p> Pendukung laporan</p>
                         </div>
                     </div>
                     <button onClick={() => navigate(`/laporan/${id}`)} className="flex self-center bg-primary hover:bg-secondary duration-150 rounded-full text-white p-1 px-2 text-sm">Detail</button>
