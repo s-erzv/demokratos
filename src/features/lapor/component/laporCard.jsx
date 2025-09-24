@@ -39,7 +39,7 @@ export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori,
                 </div>
                 <div className="flex flex-row text-primary gap-2 text-sm">
                     <MapPin />
-                    <p>{alamat}</p>
+                    <p className="truncate">{alamat}</p>
                 </div>
                 <div className="flex flex-row items-center justify-between gap-5">
                     <div className="flex flex-row gap-2 text-sm">
