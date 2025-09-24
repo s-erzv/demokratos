@@ -190,20 +190,19 @@ const AdminDashboard = () => {
         }
     };
 
-    const backgroundStyle = { 
-        backgroundImage: `url('/bg-userdashboard.svg')`, 
-        backgroundPosition: 'right',
-        backgroundRepeat: 'no-repeat',
-    };
 
     return (
         <MainLayout>
             <div className="min-h-screen">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
                     
-                    {/* Header Section */}
-                    <div className="bg-white rounded-xl shadow-lg p-6 sm:p-10 relative overflow-hidden border border-gray-100"
-                    style={backgroundStyle}> 
+                    <div className="bg-white rounded-xl shadow-lg p-6 sm:p-10 relative overflow-hidden border border-gray-100">
+                        <div className="absolute top-0 right-0 h-full w-[60%] z-0 hidden md:block">
+                            <div 
+                            className="w-full h-full bg-right bg-no-repeat"
+                            style={{ backgroundImage: `url('/bg-userdashboard.svg')` }}
+                            ></div>
+                        </div> 
                         
                         <div className="relative z-10">
                             <div className="flex items-center mb-4">

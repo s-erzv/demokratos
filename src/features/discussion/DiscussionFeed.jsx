@@ -5,6 +5,7 @@ import PostCard from './PostCard';
 import { useAuth } from '../../hooks/AuthContext';
 import AdminReportFeed from './AdminReportFeed';
 import ikonDiskusi from '../../assets/ikondiskusi.svg';
+import { SlidersHorizontal } from 'lucide-react';
 
 
 const DiscussionFeed = () => {
@@ -106,8 +107,8 @@ const DiscussionFeed = () => {
             onClick={() => setIsFilterOpen(prev => !prev)}
             className="w-full md:w-auto bg-primary text-white font-semibold py-1.5 md:py-2.5 px-6 rounded-full flex items-center justify-center hover:bg-red-800 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="4" x2="4" y1="21" y2="14"></line><line x1="4" x2="4" y1="10" y2="3"></line><line x1="12" x2="12" y1="21" y2="12"></line><line x1="12" x2="12" y1="8" y2="3"></line><line x1="20" x2="20" y1="21" y2="16"></line><line x1="20"x2="20" y1="12" y2="3"></line><line x1="1" x2="7" y1="14"></line><line x1="9" x2="15" y1="8"></line><line x1="17" x2="23" y1="16"></line></svg>
-            <span>{filter ? filterDisplayNames[filter] : 'Filter'}</span>
+             <SlidersHorizontal size={20} className="mr-2" />
+             <span>{filter ? filterDisplayNames[filter] : 'Filter'}</span>
           </button>
 
           {/* Menu Dropdown yang Diperbarui */}
