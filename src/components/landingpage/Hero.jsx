@@ -22,7 +22,7 @@ const Hero = () => {
             Ikut serta dalam pengaduan publik, voting kebijakan, dan diskusi warga demi pemerintahan yang transparan
           </h2>
           <div className="flex flex-row gap-5">
-            <button onClick={() => navigate("/login")} className="md:px-10 md:py-4 px-5 py-2 sm:py-3 sm:px-6 bg-primary hover:brightness-125 duration-200 2xl:text-3xl lg:text-2xl md:text-2xl sm:text-sm text-xs rounded-full text-white">
+            <button onClick={() => navigate("/signin")} className="md:px-10 md:py-4 px-5 py-2 sm:py-3 sm:px-6 bg-primary hover:brightness-125 duration-200 2xl:text-3xl lg:text-2xl md:text-2xl sm:text-sm text-xs rounded-full text-white">
               Daftar Sekarang
             </button>
             <button className="md:px-10 md:py-4 px-5 py-2 sm:py-3 sm:px-6 duration-200 2xl:text-3xl lg:text-2xl md:text-2xl sm:text-sm text-xs rounded-full relative border-2 border-secondary z-10 group">
