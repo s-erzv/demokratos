@@ -300,114 +300,72 @@ exports.votePolicy = functions.https.onRequest((req, res) => {
     });
 });
 
-exports.getSentimentAnalysis = functions.https.onRequest((req, res) => {
-    // URL Cloud Function di sini akan sama dengan yang di-deploy:
-    // https://us-central1-demokratos-5b0ce.cloudfunctions.net/getSentimentAnalysis
-
-    cors(req, res, async () => {
-        
-        if (req.method !== 'POST') {
-            return res.status(405).send({ status: 'error', message: 'Method Not Allowed' });
-        }
-
-        const { policyId } = req.body;
-        if (!policyId) {
-            return res.status(400).json({ status: 'error', message: 'ID kebijakan wajib disertakan.' });
-        }
-
-        // Terapkan batas minimum partisipasi
-        const MIN_PARTICIPATION = 5; 
-
-        try {
-            // 1. Ambil Data Kebijakan (untuk total vote dan judul)
-            const policyRef = db.collection('policies').doc(policyId);
-            const policySnap = await policyRef.get();
-
-            if (!policySnap.exists) {
-                return res.status(404).json({ status: 'error', message: 'Kebijakan tidak ditemukan.' });
-            }
-            const policyData = policySnap.data();
-
-            const totalVotesCount = (policyData.votesYes || 0) + (policyData.votesNo || 0);
-
-            if (totalVotesCount < MIN_PARTICIPATION) {
-                 return res.status(200).json({ 
-                    status: 'success', 
-                    report: `Analisis Sentimen membutuhkan minimal ${MIN_PARTICIPATION} total suara. Saat ini hanya ada ${totalVotesCount} suara.`,
-                    message: 'Partisipasi kurang untuk analisis.'
-                });
-            }
-
-            // 2. Ambil Semua Alasan Voting (Aspirasi) yang Disimpan
-            const votesCollection = db.collection('votes');
-            const votesQuery = votesCollection.where('policyId', '==', policyId);
-            const votesSnapshot = await votesQuery.get();
-
-            let votesData = {
-                yes: policyData.votesYes || 0,
-                no: policyData.votesNo || 0,
-                reasons: []
-            };
-
-            votesSnapshot.forEach(doc => {
-                const data = doc.data();
-                // Hanya masukkan alasan (reason) yang valid/diisi
-                if (data.reason && typeof data.reason === 'string' && data.reason.trim().length > 0) {
-                    votesData.reasons.push({
-                        choice: data.choice, // 'yes' or 'no'
-                        reason: data.reason.trim()
-                    });
-                }
-            });
-
-            // 3. Persiapkan Prompt untuk Gemini AI
-            const totalVotes = votesData.yes + votesData.no;
-            const percentageYes = totalVotes > 0 ? ((votesData.yes / totalVotes) * 100).toFixed(1) : 50.0;
-            const percentageNo = totalVotes > 0 ? ((votesData.no / totalVotes) * 100).toFixed(1) : 50.0;
-            const primarySentiment = votesData.yes >= votesData.no ? 'POSITIF (Setuju)' : 'NEGATIF (Tidak Setuju)';
-            const primaryPercentage = votesData.yes >= votesData.no ? percentageYes : percentageNo;
-            const secondaryPercentage = votesData.yes >= votesData.no ? percentageNo : percentageYes;
-            const secondarySentiment = votesData.yes >= votesData.no ? 'NEGATIF (Tidak Setuju)' : 'POSITIF (Setuju)';
-
-            const reasonsText = votesData.reasons.map(r => `[${r.choice.toUpperCase()}]: ${r.reason}`).join('\n');
-
-             const aiPrompt = `
-                Lakukan analisis sentimen singkat dan padat untuk kebijakan: "${policyData.title}" berdasarkan data berikut.
-
-                DATA INPUT:
-                Sentimen Mayoritas: ${primarySentiment} (${primaryPercentage}%)
-                Total Setuju: ${votesData.yes}
-                Total Tidak Setuju: ${votesData.no}
-                Aspirasi Utama: ${reasonsText.length > 0 ? reasonsText : 'Tidak ada alasan tambahan yang dicatat.'}
-
-                TUGAS:
-                Hasilkan SATU paragraf teks dalam Bahasa Indonesia. Teks ini harus:
-                1. Ringkas dan lugas (Maksimal 10 kalimat).
-                2. Mencakup kesimpulan sentimen mayoritas dan dua (maksimal) tema alasan utama.
-                3. Ditutup dengan satu kalimat rekomendasi/aksi singkat.
-                4. Dilarang keras menggunakan karakter Markdown seperti *, #, -, :, kurung siku, atau new line ganda. Output harus berupa plain text satu paragraf.
-                `;
-
-            // 4. Panggil Gemini API
-            const geminiResponse = await ai.models.generateContent({
-                model: 'gemini-2.5-flash', 
-                contents: aiPrompt,
-            });
-            
-            const sentimentReport = geminiResponse.text;
-
-            return res.status(200).json({ 
-                status: 'success', 
-                report: sentimentReport,
-                message: 'Analisis sentimen berhasil dibuat oleh Gemini AI.'
-            });
-
-        } catch (err) {
-            console.error("Error generating sentiment analysis:", err);
-            return res.status(500).json({ 
-                status: 'error', 
-                message: `Gagal memproses analisis sentimen. Error: ${err.message}. Pastikan GEMINI_API_KEY sudah diatur.` 
-            });
-        }
-    });
+exports.deletePost = functions.https.onCall(async (data, context) => {
+    // 1. Pastikan pengguna sudah login
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Anda harus login untuk melakukan aksi ini.");
+    }
+  
+    try {
+      // 2. Ambil UID pengguna dan periksa perannya di database
+      const uid = context.auth.uid;
+      const userDoc = await db.collection('users').doc(uid).get();
+  
+      if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+        throw new functions.https.HttpsError("permission-denied", "Hanya admin yang bisa menghapus post.");
+      }
+      
+      // 3. Jika lolos, lanjutkan logika penghapusan
+      const { postId } = data;
+      if (!postId) {
+        throw new functions.https.HttpsError("invalid-argument", "ID post tidak valid.");
+      }
+      
+      const postRef = db.collection("posts").doc(postId);
+      await db.recursiveDelete(postRef); // Gunakan recursiveDelete
+      
+      return { message: `Post ${postId} berhasil dihapus.` };
+  
+    } catch (error) {
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      functions.logger.error("Gagal menghapus post:", error);
+      throw new functions.https.HttpsError("internal", "Terjadi kesalahan server.");
+    }
 });
+
+exports.dismissReport = functions.https.onCall(async (data, context) => {
+    // 1. Pastikan pengguna sudah login
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Anda harus login untuk melakukan aksi ini.");
+    }
+   
+    try {
+      // 2. Ambil UID pengguna dan periksa perannya di database
+      const uid = context.auth.uid;
+      const userDoc = await db.collection('users').doc(uid).get();
+      
+      if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+        throw new functions.https.HttpsError("permission-denied", "Hanya admin yang bisa mengabaikan laporan.");
+      }
+  
+      // 3. Jika lolos, lanjutkan logika
+      const { reportId } = data;
+      if (!reportId) {
+        throw new functions.https.HttpsError("invalid-argument", "ID laporan tidak valid.");
+      }
+      
+      const reportRef = db.collection("reports").doc(reportId);
+      await reportRef.delete();
+      
+      return { message: `Laporan dengan ID ${reportId} berhasil diabaikan.` };
+  
+    } catch (error) {
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      functions.logger.error(`Gagal mengabaikan laporan:`, error);
+      throw new functions.https.HttpsError("internal", "Terjadi kesalahan server.");
+    }
+  });

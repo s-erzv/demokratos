@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore'; 
 import { Search, SlidersHorizontal, Loader2, ChevronLeft } from 'lucide-react';
 import Card from '../components/Card'; 
-import { usePolicyActions } from '../hooks/usePolicyActions'; 
+import { usePolicyActions } from '../features/policy-voting/hooks/usePolicyActions'; 
 import { Link } from 'react-router-dom'; // Pastikan Link di-import
 
 const AllPoliciesPage = () => {
