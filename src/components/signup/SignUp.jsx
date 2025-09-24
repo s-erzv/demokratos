@@ -132,7 +132,7 @@ function SignUp({ toggleAuthMode }) {
               <div className="text-center text-sm text-gray-600 mt-4">
                 <p>Sudah punya akun?{' '}
                     <button 
-                        onClick={toggleAuthMode} 
+                        onClick={() => navigate("/signin")} 
                         className="font-semibold text-primary hover:underline"
                     >
                         Masuk di sini
