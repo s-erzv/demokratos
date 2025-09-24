@@ -12,6 +12,7 @@ import CreateCommentForm from './CreateCommentForm';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import ConfirmationModal from '../../components/styling/confirmationModal';
 
+
 const Badge = ({ sourceType, type, kategori }) => {
   let text = '';
   let bgColor = 'bg-gray-200';
@@ -124,8 +125,17 @@ const PostCard = ({ post, onUpdate }) => {
     };
 
     const confirmDelete = async () => {
+      if (!currentUser) {
+        alert("Sesi pengguna tidak ditemukan. Silakan login ulang.");
+        setIsDeleting(false);
+        setIsConfirmModalOpen(false);
+        return;
+      }
+
       setIsDeleting(true);
       try {
+        if (!currentUser) throw new Error("Sesi tidak ditemukan. Harap login ulang.");
+        await currentUser.getIdToken(true);
         const functions = getFunctions();
         const deletePostCallable = httpsCallable(functions, 'deletePost');
         await deletePostCallable({ postId: post.id });

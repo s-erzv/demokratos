@@ -329,28 +329,71 @@ exports.getSentimentAnalysis = functions.https.onRequest((req, res) => {
 });
 
 exports.deletePost = functions.https.onCall(async (data, context) => {
-    if (context.auth.token.role !== 'admin') {
-        functions.logger.warn(`Pengguna non-admin (UID: ${context.auth.uid}) mencoba menghapus post.`);
-        throw new functions.https.HttpsError("permission-denied", "Hanya admin yang bisa menghapus post.");
+    // 1. Pastikan pengguna sudah login
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Anda harus login untuk melakukan aksi ini.");
     }
-
-    const { postId } = data;
-    if (!postId) {
-        throw new functions.https.HttpsError("invalid-argument", "ID post tidak valid.");
-    }
-    
+  
     try {
-        const postRef = db.collection("posts").doc(postId);
-        
-        await deleteCollection(`posts/${postId}/comments`, 50);
-        await deleteCollection(`posts/${postId}/likes`, 50);
-        await deleteCollection(`posts/${postId}/reports`, 50);
-        await postRef.delete();
-        
-        return { message: `Post ${postId} dan sub-koleksinya berhasil dihapus.` };
-
+      // 2. Ambil UID pengguna dan periksa perannya di database
+      const uid = context.auth.uid;
+      const userDoc = await db.collection('users').doc(uid).get();
+  
+      if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+        throw new functions.https.HttpsError("permission-denied", "Hanya admin yang bisa menghapus post.");
+      }
+      
+      // 3. Jika lolos, lanjutkan logika penghapusan
+      const { postId } = data;
+      if (!postId) {
+        throw new functions.https.HttpsError("invalid-argument", "ID post tidak valid.");
+      }
+      
+      const postRef = db.collection("posts").doc(postId);
+      await db.recursiveDelete(postRef); // Gunakan recursiveDelete
+      
+      return { message: `Post ${postId} berhasil dihapus.` };
+  
     } catch (error) {
-        functions.logger.error(`Error saat menghapus post ${postId}:`, error);
-        throw new functions.https.HttpsError("internal", "Terjadi kesalahan saat menghapus post.", error);
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      functions.logger.error("Gagal menghapus post:", error);
+      throw new functions.https.HttpsError("internal", "Terjadi kesalahan server.");
     }
 });
+
+exports.dismissReport = functions.https.onCall(async (data, context) => {
+    // 1. Pastikan pengguna sudah login
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Anda harus login untuk melakukan aksi ini.");
+    }
+   
+    try {
+      // 2. Ambil UID pengguna dan periksa perannya di database
+      const uid = context.auth.uid;
+      const userDoc = await db.collection('users').doc(uid).get();
+      
+      if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+        throw new functions.https.HttpsError("permission-denied", "Hanya admin yang bisa mengabaikan laporan.");
+      }
+  
+      // 3. Jika lolos, lanjutkan logika
+      const { reportId } = data;
+      if (!reportId) {
+        throw new functions.https.HttpsError("invalid-argument", "ID laporan tidak valid.");
+      }
+      
+      const reportRef = db.collection("reports").doc(reportId);
+      await reportRef.delete();
+      
+      return { message: `Laporan dengan ID ${reportId} berhasil diabaikan.` };
+  
+    } catch (error) {
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      functions.logger.error(`Gagal mengabaikan laporan:`, error);
+      throw new functions.https.HttpsError("internal", "Terjadi kesalahan server.");
+    }
+  });

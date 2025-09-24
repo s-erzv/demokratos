@@ -2,8 +2,12 @@ import { formatTimeAgo } from "../../utils/formatters";
 import { UserCircle } from "lucide-react";
 import ConfirmationModal from "../../components/styling/confirmationModal";
 import { useState } from "react";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { useAuth } from "../../hooks/AuthContext";
 
 const ReportedPostCard = ({ report, onActionTaken}) => {
+  const { currentUser, isAdmin } = useAuth();
+
   const [modalState, setModalState] = useState({
     isOpen: false,
     title: '',
@@ -15,41 +19,72 @@ const ReportedPostCard = ({ report, onActionTaken}) => {
 
   // Fungsi yang akan dijalankan saat admin konfirmasi HAPUS POST
   const confirmDeletePost = async () => {
+    if (!currentUser) {
+      alert("Sesi pengguna tidak ditemukan. Silakan login ulang.");
+      setIsDeleting(false);
+      setIsConfirmModalOpen(false);
+      return;
+    }
+
     setLoadingAction(true);
-    console.log("Menghapus post:", report.postId);
-    // await deletePost(report.postId); // Panggil Cloud Function
-    if (onActionTaken) onActionTaken();
-    setModalState({ isOpen: false }); // Tutup modal
-    setLoadingAction(false);
+    try {
+      if (!currentUser) throw new Error("Sesi tidak ditemukan. Harap login ulang.");
+      await currentUser.getIdToken(true);
+
+      const functions = getFunctions();
+      const deletePostCallable = httpsCallable(functions, 'deletePost');
+      await deletePostCallable({ postId: report.postId });
+      if (onActionTaken) onActionTaken();
+    } catch (error) {
+      console.error("Error menghapus post:", error);
+      alert(`Gagal menghapus post: ${error.message}`);
+    } finally {
+      setLoadingAction(false);
+      setModalState({ isOpen: false });
+    }
   };
 
-  // Fungsi yang akan dijalankan saat admin konfirmasi ABAIKAN LAPORAN
   const confirmDismissReport = async () => {
+    if (!currentUser) {
+      alert("Sesi pengguna tidak ditemukan. Silakan login ulang.");
+      setIsDeleting(false);
+      setIsConfirmModalOpen(false);
+      return;
+    }
+    
     setLoadingAction(true);
-    console.log("Mengabaikan laporan:", report.id);
-    // await dismissReport(report.id); // Panggil Cloud Function
-    if (onActionTaken) onActionTaken();
-    setModalState({ isOpen: false }); // Tutup modal
-    setLoadingAction(false);
+    try {
+      if (!currentUser) throw new Error("Sesi tidak ditemukan. Harap login ulang.");
+            await currentUser.getIdToken(true);
+
+      const functions = getFunctions();
+      const dismissReportCallable = httpsCallable(functions, 'dismissReport');
+      await dismissReportCallable({ reportId: report.id });
+      if (onActionTaken) onActionTaken(); // Refresh daftar laporan
+    } catch (error) {
+      console.error("Gagal mengabaikan laporan:", error);
+      alert(`Gagal mengabaikan laporan: ${error.message}`);
+    } finally {
+      setLoadingAction(false);
+      setModalState({ isOpen: false });
+    }
   };
   
-  // Handler ini sekarang HANYA menampilkan modal untuk hapus post
   const handleDeletePost = () => {
     setModalState({
       isOpen: true,
       title: "Hapus Postingan Ini?",
-      message: "Aksi ini akan menghapus postingan secara permanen. Semua komentar dan data terkait akan hilang.",
+      message: "Aksi ini akan menghapus postingan secara permanen.",
       onConfirm: confirmDeletePost,
       confirmText: "Ya, Hapus Post"
     });
   };
 
-  // Handler ini sekarang HANYA menampilkan modal untuk abaikan laporan
   const handleDismissReport = () => {
     setModalState({
       isOpen: true,
       title: "Abaikan Laporan Ini?",
-      message: "Laporan ini akan dihapus dari daftar dan dianggap selesai. Postingan asli tidak akan terpengaruh.",
+      message: "Laporan ini akan dihapus dari daftar. Postingan asli tidak akan terpengaruh.",
       onConfirm: confirmDismissReport,
       confirmText: "Ya, Abaikan"
     });
@@ -96,10 +131,10 @@ const ReportedPostCard = ({ report, onActionTaken}) => {
   
       <div className="flex gap-3 mt-3">
         <button onClick={handleDeletePost} disabled={loadingAction} className="text-xs font-bold bg-red-600 text-white px-4 py-1.5 rounded-full hover:bg-red-700 transition-colors">
-          Hapus Post
+          {loadingAction ? '...' : 'Hapus Post'}
         </button>
         <button onClick={handleDismissReport} disabled={loadingAction} className="text-xs font-semibold bg-slate-500 text-white px-4 py-1.5 rounded-full hover:bg-slate-600 transition-colors">
-          Abaikan Laporan
+          {loadingAction ? '...' : 'Abaikan Laporan'}
         </button>
       </div>
     </div>

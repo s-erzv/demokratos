@@ -46,7 +46,7 @@ export const reportPost = async (post, currentUserData, reason) => {
   if (!post || !currentUserData || !reason) return false;
 
   const { uid: reporterId, fullName: reporterName } = currentUserData;
-  const { id: postId, authorId: reportedPostAuthorId, authorName, isAnonymous, question, body } = post;
+  const { id: postId, authorId: reportedPostAuthorId, authorName, authorPhotoURL, isAnonymous, question, body } = post;
   
   const reportCheckRef = doc(db, 'posts', postId, 'reports', reporterId);
   const newReportRef = doc(collection(db, 'reports'));
