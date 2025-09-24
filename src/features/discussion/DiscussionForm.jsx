@@ -87,12 +87,19 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
     >
       {/* PENYESUAIAN KARTU: Dibuat lebih lebar (max-w-3xl) dan padding lebih besar */}
       <div 
-        className='bg-white p-8 md:p-12 rounded-2xl shadow-2xl w-full max-w-3xl relative' 
+        className='bg-white px-8 pb-8 pt-12 md:p-12 rounded-2xl shadow-2xl w-full max-w-3xl relative' 
         onClick={(e) => e.stopPropagation()}
       >
-  
+        <button 
+          onClick={onClose} 
+          className="absolute top-2 right-4 grid h-10 w-10 place-items-center rounded-full text-slate-500 hover:bg-slate-100 transition-colors"
+          aria-label="Tutup modal"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
         {/* PENYESUAIAN JUDUL: Dibuat center, lebih besar, dan tombol X dihilangkan */}
-        <h3 className="text-center text-3xl font-extrabold text-slate-900 mb-8">
+        <h3 className="text-center text-3xl font-extrabold text-slate-900 mb-5">
           Buat Diskusi Baru
         </h3>
   
@@ -129,14 +136,14 @@ const DiscussionForm = ({ isOpen, onClose, onDiscussionAdded, sourceType, source
             onChange={(e) => setQuestion(e.target.value)}
           />
           <textarea
-            className="w-full px-5 py-4 bg-slate-100/70 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary transition min-h-[140px] resize-y"
+            className="w-full px-5 py-1 md:py-4 bg-slate-100/70 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary transition h-24 md:min-h-[140px] resize-y"
             placeholder="Jelaskan topik atau pendapat awal Anda. Sertakan data, contoh kasus, atau alasan kenapa diskusi ini penting."
             value={body}
             onChange={(e) => setBody(e.target.value)}
           />
           
           {/* Kelompok Aksi di bagian bawah */}
-          <div className="pt-2 space-y-4">
+          <div className="pt-0 md:pt-2 space-y-4">
             <div className="flex items-center">
               <input
                 type="checkbox"

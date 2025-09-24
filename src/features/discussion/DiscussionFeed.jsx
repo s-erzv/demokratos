@@ -16,7 +16,7 @@ const DiscussionFeed = () => {
   const [filter, setFilter] = useState(null);     
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  
+
   const triggerRefresh = () => setRefreshKey(prevKey => prevKey + 1);
 
   const filterDisplayNames = {
@@ -106,7 +106,7 @@ const DiscussionFeed = () => {
         <div className="relative">
           <button 
             onClick={() => setIsFilterOpen(prev => !prev)}
-            className="w-full md:w-auto bg-primary text-white font-semibold py-1.5 md:py-2.5 px-6 rounded-full flex items-center justify-center hover:bg-red-800 transition-colors"
+            className="w-full md:w-auto bg-primary text-white font-semibold py-1.5 md:py-2.5 px-6 rounded-xl flex items-center justify-center hover:bg-red-800 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="4" x2="4" y1="21" y2="14"></line><line x1="4" x2="4" y1="10" y2="3"></line><line x1="12" x2="12" y1="21" y2="12"></line><line x1="12" x2="12" y1="8" y2="3"></line><line x1="20" x2="20" y1="21" y2="16"></line><line x1="20"x2="20" y1="12" y2="3"></line><line x1="1" x2="7" y1="14"></line><line x1="9" x2="15" y1="8"></line><line x1="17" x2="23" y1="16"></line></svg>
             <span>{filter ? filterDisplayNames[filter] : 'Filter'}</span>
@@ -115,8 +115,8 @@ const DiscussionFeed = () => {
           {/* Menu Dropdown yang Diperbarui */}
           <div 
             className={`
-              absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 p-2
-              transition-all duration-150 ease-out
+              absolute top-full right-0 mt-2 w-full md:w-40  rounded-xl   p-2
+              transition-all duration-150 ease-out space-y-2
               ${isFilterOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
               z-50
             `}
@@ -125,7 +125,7 @@ const DiscussionFeed = () => {
               <button 
                 key={key}
                 onClick={() => handleFilterSelect(key)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${filter === key ? 'bg-primary text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+                className={`w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between bg-red-800 text-white font-semibold ${filter === key ? 'bg-primary text-white' : ''}`}
               >
                 <span>{value}</span>
                 {/* Tambahkan ikon centang jika filter aktif */}
