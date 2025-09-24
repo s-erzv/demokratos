@@ -6,7 +6,7 @@ const IdNavbar = () => {
   const [seeMore, setSeeMore] = useState(false);
   const navigate = useNavigate();
   const handleGetStartedClick = () => {
-    navigate('/login');
+    navigate('/signin');
   };
 
   return (

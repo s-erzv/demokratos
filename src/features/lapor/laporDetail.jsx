@@ -98,7 +98,7 @@ export default function LaporDetail(){
     useEffect(() => {
         fetchData()
         fetchDiskusi(laporanId)
-    }, [])
+    }, [laporanId])
 
     const fetchLaporan = async () => {
         const docRef = doc(db, "laporan", laporanId);
