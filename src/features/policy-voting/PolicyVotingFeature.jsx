@@ -80,14 +80,14 @@ const PolicyVotingFeature = () => {
                     Buat Vote
                 </h1>
  
-                <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800">
+                {/* <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800">
                     <p className="font-bold mb-1">DEBUG INFO (Client Status):</p>
                     <p>Status Loading Autentikasi: <span className="font-semibold">{authLoading ? 'TRUE' : 'FALSE'}</span></p>
                     <p>User UID: <span className="font-semibold">{currentUser ? currentUser.uid : 'NULL (Belum Login)'}</span></p>
                     <p>User Role: <span className="font-semibold">{userData?.role || 'Tidak Tersedia'}</span></p>
                     <p>Status Admin: <span className="font-semibold">{isAdmin ? 'YA' : 'TIDAK'}</span></p>
                     <p className="font-bold mt-2">STATUS: Menggunakan work-around onRequest + Manual Auth Check (Fungsi: submitPolicy).</p>
-                </div> 
+                </div>  */}
                 {error && <p className="p-3 mb-4 text-center text-red-800 bg-red-100 rounded-lg">{error}</p>}
                 {success && <p className="p-3 mb-4 text-center text-green-800 bg-green-100 rounded-lg">{success}</p>}
 
