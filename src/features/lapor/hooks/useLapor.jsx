@@ -87,6 +87,7 @@ export const LaporProvider = ({ children }) => {
     const [currentDiskusi, setCurrentDiskusi] = useState([])
     const [hasilLaporAnalisis, setHasillaporAnalisis] = useState("")
     const [showAnalisis, setShowAnalisis] = useState(false)
+    const [analisisLoading, setAnalisisLoading] = useState(false)
 
     async function fetchDiskusi(LaporanId){
         const q = query(collection(db, "posts"), where("sourceId", "==", LaporanId))
@@ -99,10 +100,13 @@ export const LaporProvider = ({ children }) => {
         setCurrentDiskusi(diskusiData)
     }
 
-    async function analisisLaporan(){
-        const data = JSON.stringify(currentDiskusi)
+    async function analisisLaporan(dataLaporan){
+        setAnalisisLoading(true)
 
-        const prompt = `Coba berikan analisis berdasarkan data diskusi berikut ini: ${data}`
+        const dataDiskusi = JSON.stringify(currentDiskusi)
+        dataLaporan = JSON.stringify(dataLaporan)
+
+        const prompt = `Coba berikan analisis mengenai laporan ini: ${dataLaporan} berdasarkan data diskusi berikut ini: ${dataDiskusi}`
 
         const result = await LaporanModel.generateContent(prompt)
 
@@ -110,6 +114,7 @@ export const LaporProvider = ({ children }) => {
         const text = response.text()
         setHasillaporAnalisis(text)
         setShowAnalisis(true)
+        setAnalisisLoading(false)
     }
 
     const [selectDelete, setSelectDelete] = useState("")
@@ -153,7 +158,7 @@ export const LaporProvider = ({ children }) => {
 }
 
     return(
-        <LaporContext.Provider value={{ show, dataUpdate, setDataUpdate, setSelectUpdate, showUpdate, setShowUpdate, handleUpdate, setSelectDelete, showDelete, setShowDelete, handleDelete, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, analisisLoading, dataUpdate, setDataUpdate, setSelectUpdate, showUpdate, setShowUpdate, handleUpdate, setSelectDelete, showDelete, setShowDelete, handleDelete, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )

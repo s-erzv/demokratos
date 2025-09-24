@@ -25,7 +25,7 @@ export default function LaporDetail(){
     const { currentUser } = useAuth();
     const { laporanId } = useParams()
     const { userData } = useAuth()
-    const { isAdmin, setShowStatus, analisisLaporan, fetchDiskusi, hasilLaporAnalisis, showAnalisis, setShowAnalisis } = useLapor()
+    const { isAdmin, setShowStatus, analisisLaporan, fetchDiskusi, hasilLaporAnalisis, showAnalisis, setShowAnalisis, analisisLoading } = useLapor()
 
     const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -118,7 +118,7 @@ export default function LaporDetail(){
     if (loading) return <p>Memuat laporan...</p>;
     if (!laporan) return <p>Laporan tidak ditemukan.</p>;
 
-    const textAnalisisButton = hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen"
+    const textAnalisisButton = analisisLoading ? "Sedang Menganalisis" : (hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen")
 
     const statusClass = statusStyles[laporan.status] || statusStyles.default;
 
@@ -151,7 +151,7 @@ export default function LaporDetail(){
                     </div>
                     {isAdmin ? 
                         <div className="flex flex-col w-full gap-2">
-                            <button onClick={() => {hasilLaporAnalisis ? setShowAnalisis(true) : analisisLaporan()}} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">{textAnalisisButton}</button>
+                            <button onClick={() => {analisisLoading ? "" : (hasilLaporAnalisis ? setShowAnalisis(true) : analisisLaporan(laporan))}} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">{textAnalisisButton}</button>
                             <button onClick={() => setShowStatus(true)} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Tindak Lanjuti</button>
                         </div>
                         :
