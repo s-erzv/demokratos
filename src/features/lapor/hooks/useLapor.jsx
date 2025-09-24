@@ -16,7 +16,7 @@ export const LaporProvider = ({ children }) => {
 
     const [sort, setSort] = useState("")
 
-    const [refreshLaporan, setRefreshLaporan] = useState(0)
+    const [refreshLaporan, setRefreshLaporan] = useState(false)
 
     const [search, setSearch] = useState("")
     const [filter, setFilter] = useState("")
@@ -113,7 +113,7 @@ export const LaporProvider = ({ children }) => {
     }
 
     return(
-        <LaporContext.Provider value={{ show, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )

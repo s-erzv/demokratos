@@ -86,7 +86,7 @@ export default function ContentLengkap( ) {
                 <button onClick={() => setSort("")} className={`${sort ? "" : "hidden"} flex flex-row gap-2 items-center text-white bg-primary p-1 px-3`}>{sort}<CircleX size={20}/></button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 p-2">
                 {currentItems.map(laporan => (
                     <div key={laporan.id}>
                         <LaporCard imageURL={laporan.fileURL} judul={laporan.judul} deskripsi={laporan.deskripsi} alamat={laporan.alamat} kategori={laporan.kategori} status={laporan.status} pendukung={laporan.pendukung} id={laporan.docId}/>
