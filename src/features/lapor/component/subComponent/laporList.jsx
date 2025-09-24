@@ -68,6 +68,8 @@ export default function LaporList({kategori}){
         setFilteredData(result);
     }, [search, data, filter]);
 
+    const textListlaporan = (kategori === "Laporan Anda") ? "Anda Belum Membuat laporan" : "Loading Data"
+
     return(
         <>  
             <div className="flex flex-row items-center justify-between">
