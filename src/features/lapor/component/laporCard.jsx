@@ -6,14 +6,14 @@ import { useLapor } from "../hooks/useLapor";
 export default function LaporCard({imageURL, judul, deskripsi, alamat, kategori, status, pendukung, id, authorId }){
     const navigate = useNavigate()
     const { userData } = useAuth()
-    const { setShowDelete, setSelectDelete } = useLapor()
+    const { setShowDelete, setSelectDelete, setShowUpdate, setSelectUpdate, setDataUpdate } = useLapor()
 
     const setting = authorId === userData.uid
 
     return(
         <div className="h-fit w-full bg-white border-2 rounded-2xl p-2 flex flex-col gap-3 shadow-md relative max-w-80 justify-self-center">
             <div className={`${setting ? "" : "hidden"} flex flex-row absolute top-0 right-0 p-5 gap-3`} >
-                <button className="bg-primary rounded-full aspect-square p-1 text-white hover:bg-secondary duration-150"><Pencil size={20}/></button>
+                <button onClick={() => {setShowUpdate(true), setSelectUpdate(id), setDataUpdate({ judul, deskripsi, alamat})}} className="bg-primary rounded-full aspect-square p-1 text-white hover:bg-secondary duration-150"><Pencil size={20}/></button>
                 <button onClick={() => {setShowDelete(true), setSelectDelete(id)}} className="bg-primary rounded-full aspect-square p-1 text-white hover:bg-secondary duration-150"><Trash size={20}/></button>
             </div>
             <img src={imageURL} alt={`${judul} image`} className="h-40 w-full rounded-2xl object-cover"/>

@@ -119,7 +119,6 @@ export const LaporProvider = ({ children }) => {
         try {
             const docRef = doc(db, "laporan", selectDelete)
             await deleteDoc(docRef)
-            console.log("berhasil hapus yeyyy")
             setRefreshLaporan(prev => !prev)
             setShowDelete(false)
             setSelectDelete("")
@@ -128,8 +127,33 @@ export const LaporProvider = ({ children }) => {
         }
     }
 
+    const [selectUpdate, setSelectUpdate] = useState("")
+    const [dataUpdate, setDataUpdate] = useState([])
+    const [showUpdate, setShowUpdate] = useState(false)
+
+    async function handleUpdate(newData) {
+    // Pengecekan jika tidak ada ID yang dipilih
+    if (!selectUpdate) {
+        console.error("Tidak ada laporan yang dipilih untuk di-update.");
+        return;
+    }
+
+    try {
+        const docRef = doc(db, "laporan", selectUpdate);
+        
+        // Langsung gunakan objek 'newData' untuk meng-update
+        await updateDoc(docRef, newData);
+    
+        setRefreshLaporan(prev => !prev)
+        setShowUpdate(false);
+        setSelectUpdate("");
+    } catch (error) {
+        console.log(error);
+    }
+}
+
     return(
-        <LaporContext.Provider value={{ show, setSelectDelete, showDelete, setShowDelete, handleDelete, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, dataUpdate, setDataUpdate, setSelectUpdate, showUpdate, setShowUpdate, handleUpdate, setSelectDelete, showDelete, setShowDelete, handleDelete, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )

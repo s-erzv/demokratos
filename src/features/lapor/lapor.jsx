@@ -1,3 +1,4 @@
+import ChangelaporModal from "./component/changeLaporModal";
 import Content from "./component/content";
 import DeleteModal from "./component/deleteModal";
 import Header from "./component/header";
@@ -11,6 +12,7 @@ export default function Lapor(){
             <Content/>
             <LaporModel/>
             <DeleteModal/>
+            <ChangelaporModal/>
         </LaporProvider>
     )
 }
