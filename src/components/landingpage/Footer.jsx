@@ -3,47 +3,49 @@ import React from 'react'
 
 const Footer = () => {
   return (
-    <>  
-        <div className='h-full w-full p-10'>
-            <div className='h-full w-full bg-white'>
-                <div>
-                    <h2>Saatnya Suara Anda Ikut Menentukan</h2>
-                    <p>Mulai berpartisipasi hari ini—suara Anda adalah bagian dari solusi.</p>
+    <>
+        {/* Kontainer utama dengan padding responsif */}
+        <div className='w-full flex flex-col bg-white rounded-2xl p-6 md:p-10'>
+            {/* Bagian atas: Logo dan Menu */}
+            <div className='w-full flex flex-col md:flex-row md:justify-between items-center md:items-start gap-8 md:gap-4'>
+                
+                {/* Sisi Kiri: Branding */}
+                <div className='flex flex-col items-center md:items-start text-center md:text-left gap-2'>
+                    <img 
+                        src="/logoDemokratos.svg" 
+                        alt="Demokratos Logo"
+                        className='h-16 w-16' // Ukuran logo yang konsisten
+                    />
+                    <h2 className='text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent'>
+                        Demokratos
+                    </h2>
+                    <p className='text-sm md:text-base text-text'>
+                        Partisipasi Mudah, Dampak Nyata
+                    </p>
                 </div>
-                <button>Daftar Sekarang</button>
-            </div>
-        </div>
-        <div className='w-full flex flex-col px-20 pt-10 pb-2 bg-white rounded-2xl items-center justify-center md:gap-15 gap-8'>
-            <div className='w-full flex flex-row lg:px-15 px-5 sm:px-9 md:px-12 items-center justify-between max-md:gap-5'>
-                <div className='w-full flex flex-col items-start gap-3'>
-                        <img src="/logoDemokratos.svg" 
-                            alt="Planix Logo"
-                            className='size-15 2xl:size-20 block' 
-                        />
-                        <h2 className='text-xl md:text-5xl mt-2  font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent'>Demokratos</h2>
-                    <p className='text-xs lg:text-2xl md:text-lg text-left font-medium text-text'>Partisipasi Mudah, Dampak Nyata</p>
-                </div>
-                <div className='w-full flex flex-row gap-3 sm:gap-5 md:gap-15 lg:gap-20 sm:justify-end justify-center'>
-                    <div className='flex flex-col justify-start sm:gap-2 md:gap-3 gap-1 text-text'>
-                        <h3 className='md:text-xl sm:text-lg text-base font-semibold '>Product</h3>
-                        <a href='/welcome#features' 
-                        className='hover:text-hover-button duration-150 text-small-font sm:text-xs md:text-base'>Features</a>
-                        <a href='/welcome#demo' 
-                        className='hover:text-hover-button duration-150 text-small-font sm:text-xs md:text-base'>Demo</a>
-                        <a href='/welcome#flow' 
-                        className='hover:text-hover-button duration-150 text-small-font sm:text-xs md:text-base'>How it Works</a>
+                
+                {/* Sisi Kanan: Menu Links */}
+                <div className='flex flex-row gap-8 sm:gap-12 md:gap-16 text-center md:text-left'>
+                    <div className='flex flex-col gap-3 text-text'>
+                        <h3 className='text-base md:text-lg font-semibold'>Product</h3>
+                        <a href='/welcome#features' className='hover:text-primary duration-150 text-sm md:text-base'>Features</a>
+                        <a href='/welcome#demo' className='hover:text-primary duration-150 text-sm md:text-base'>Demo</a>
+                        <a href='/welcome#flow' className='hover:text-primary duration-150 text-sm md:text-base'>How it Works</a>
                     </div>
-                    <div className='flex flex-col gap-2 text-text'>
-                        <h3 className='md:text-xl sm:text-lg text-base font-semibold '>Team</h3>
-                        <a href='/welcome#team' 
-                        className='hover:text-hover-button duration-150 text-small-font sm:text-xs md:text-base'>Our Team</a>
+                    <div className='flex flex-col gap-3 text-text'>
+                        <h3 className='text-base md:text-lg font-semibold'>Team</h3>
+                        <a href='/welcome#team' className='hover:text-primary duration-150 text-sm md:text-base'>Our Team</a>
                     </div>
                 </div>
+
             </div>
-            <div className='w-full space-y-2 pb-1'>
-                <div className='w-full md:h-1 h-0.5 bg-footer'></div>
-                <p className='text-center md:text-lg sm:text-xs text-[10px] text-text'>© 2025 Shadow Army. All rights reserved.</p>
+            
+            {/* Bagian Bawah: Copyright */}
+            <div className='w-full mt-10 space-y-3'>
+                <div className='w-full h-0.5 bg-gray-200'></div>
+                <p className='text-center text-xs sm:text-sm text-text'>© 2025 Shadow Army. All rights reserved.</p>
             </div>
+
         </div>
     </>
   )
