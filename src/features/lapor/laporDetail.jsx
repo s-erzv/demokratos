@@ -9,6 +9,15 @@ import StatusModel from "./component/statusModal";
 import PolicyDiscussionList from "../discussion/PolicyDiscussionList";
 import DiscussionForm from "../discussion/DiscussionForm";
 
+const statusStyles = {
+  "Baru diajukan": "bg-yellow-100 text-yellow-800",
+  "Dalam Verifikasi": "bg-yellow-100 text-yellow-800",
+  "Dalam Pengerjaan": "bg-blue-100 text-blue-800",
+  "Selesai": "bg-green-100 text-green-800",
+  "Ditolak": "bg-red-100 text-red-800",
+  "default": "bg-gray-100 text-gray-800" 
+};
+
 export default function LaporDetail(){
     const [isDiscussion, setIsDiscussion] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -16,7 +25,7 @@ export default function LaporDetail(){
     const { currentUser } = useAuth();
     const { laporanId } = useParams()
     const { userData } = useAuth()
-    const { isAdmin, setShowStatus, analisisLaporan, fetchDiskusi, hasilLaporAnalisis, showAnalisis, setShowAnalisis } = useLapor()
+    const { isAdmin, setShowStatus, analisisLaporan, fetchDiskusi, hasilLaporAnalisis, showAnalisis, setShowAnalisis, analisisLoading } = useLapor()
 
     const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -109,7 +118,9 @@ export default function LaporDetail(){
     if (loading) return <p>Memuat laporan...</p>;
     if (!laporan) return <p>Laporan tidak ditemukan.</p>;
 
-    const textAnalisisButton = hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen"
+    const textAnalisisButton = analisisLoading ? "Sedang Menganalisis" : (hasilLaporAnalisis ? "Buka Hasil Analisis" : "Mulai Analisis Sentimen")
+
+    const statusClass = statusStyles[laporan.status] || statusStyles.default;
 
     return(
         <div className="h-full w-full flex flex-col lg:grid lg:grid-cols-5 gap-5">
@@ -118,7 +129,7 @@ export default function LaporDetail(){
                 <img src={laporan.fileURL} alt="image masalah" className="aspect-video h-1/2 w-auto object-contain bg-black rounded-2xl"/>
                 <div className="flex sm:flex-row flex-col gap-5 w-full items-center justify-evenly">
                     <div className="flex flex-row gap-2 text-sm">
-                        <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.status}</p>
+                        <p className={`${statusClass} w-fit rounded-full p-1 px-2`}>{laporan.status}</p>
                         <p className="bg-gray-300 w-fit rounded-full p-1 px-2">{laporan.kategori}</p>
                     </div>
                     <div className="flex flex-row text-primary gap-2">
@@ -140,7 +151,7 @@ export default function LaporDetail(){
                     </div>
                     {isAdmin ? 
                         <div className="flex flex-col w-full gap-2">
-                            <button onClick={() => {hasilLaporAnalisis ? setShowAnalisis(true) : analisisLaporan()}} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">{textAnalisisButton}</button>
+                            <button onClick={() => {analisisLoading ? "" : (hasilLaporAnalisis ? setShowAnalisis(true) : analisisLaporan(laporan))}} className="w-full bg-neutral-100 p-2 rounded-full text-primary hover:bg-neutral-300 border-2 border-primary duration-150">{textAnalisisButton}</button>
                             <button onClick={() => setShowStatus(true)} className="w-full bg-primary p-2 rounded-full text-white hover:bg-secondary duration-150">Tindak Lanjuti</button>
                         </div>
                         :

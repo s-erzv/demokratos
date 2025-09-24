@@ -6,6 +6,8 @@ import { db } from '../firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Loader2, Activity, TrendingUp, MessageCircle, Vote, FileText } from 'lucide-react';
 import LaporList from '../features/lapor/component/subComponent/laporList';
+import ChangelaporModal from '../features/lapor/component/changeLaporModal';
+import DeleteModal from '../features/lapor/component/deleteModal';
 
 // STATS VISUALS DIUBAH
 const statsVisuals = [
@@ -171,6 +173,8 @@ const UserDashboard = () => {
                     <section className="space-y-4 sm:space-y-6">
                         <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100">
                             <LaporList kategori={"Laporan Anda"} />
+                            <ChangelaporModal/>
+                            <DeleteModal/>
                         </div>
                     </section>
                 </div>

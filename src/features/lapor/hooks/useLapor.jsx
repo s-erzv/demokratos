@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db, LaporanModel, storage } from "../../../firebase";
-import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useAuth } from "../../../hooks/AuthContext";
 
@@ -87,6 +87,7 @@ export const LaporProvider = ({ children }) => {
     const [currentDiskusi, setCurrentDiskusi] = useState([])
     const [hasilLaporAnalisis, setHasillaporAnalisis] = useState("")
     const [showAnalisis, setShowAnalisis] = useState(false)
+    const [analisisLoading, setAnalisisLoading] = useState(false)
 
     async function fetchDiskusi(LaporanId){
         const q = query(collection(db, "posts"), where("sourceId", "==", LaporanId))
@@ -99,10 +100,13 @@ export const LaporProvider = ({ children }) => {
         setCurrentDiskusi(diskusiData)
     }
 
-    async function analisisLaporan(){
-        const data = JSON.stringify(currentDiskusi)
+    async function analisisLaporan(dataLaporan){
+        setAnalisisLoading(true)
 
-        const prompt = `Coba berikan analisis berdasarkan data diskusi berikut ini: ${data}`
+        const dataDiskusi = JSON.stringify(currentDiskusi)
+        dataLaporan = JSON.stringify(dataLaporan)
+
+        const prompt = `Coba berikan analisis mengenai laporan ini: ${dataLaporan} berdasarkan data diskusi berikut ini: ${dataDiskusi}`
 
         const result = await LaporanModel.generateContent(prompt)
 
@@ -110,10 +114,51 @@ export const LaporProvider = ({ children }) => {
         const text = response.text()
         setHasillaporAnalisis(text)
         setShowAnalisis(true)
+        setAnalisisLoading(false)
     }
 
+    const [selectDelete, setSelectDelete] = useState("")
+    const [showDelete, setShowDelete] = useState(false)
+
+    async function handleDelete() {
+        try {
+            const docRef = doc(db, "laporan", selectDelete)
+            await deleteDoc(docRef)
+            setRefreshLaporan(prev => !prev)
+            setShowDelete(false)
+            setSelectDelete("")
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const [selectUpdate, setSelectUpdate] = useState("")
+    const [dataUpdate, setDataUpdate] = useState([])
+    const [showUpdate, setShowUpdate] = useState(false)
+
+    async function handleUpdate(newData) {
+    // Pengecekan jika tidak ada ID yang dipilih
+    if (!selectUpdate) {
+        console.error("Tidak ada laporan yang dipilih untuk di-update.");
+        return;
+    }
+
+    try {
+        const docRef = doc(db, "laporan", selectUpdate);
+        
+        // Langsung gunakan objek 'newData' untuk meng-update
+        await updateDoc(docRef, newData);
+    
+        setRefreshLaporan(prev => !prev)
+        setShowUpdate(false);
+        setSelectUpdate("");
+    } catch (error) {
+        console.log(error);
+    }
+}
+
     return(
-        <LaporContext.Provider value={{ show, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, analisisLoading, dataUpdate, setDataUpdate, setSelectUpdate, showUpdate, setShowUpdate, handleUpdate, setSelectDelete, showDelete, setShowDelete, handleDelete, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )
