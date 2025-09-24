@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db, LaporanModel, storage } from "../../../firebase";
-import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useAuth } from "../../../hooks/AuthContext";
 
@@ -112,8 +112,24 @@ export const LaporProvider = ({ children }) => {
         setShowAnalisis(true)
     }
 
+    const [selectDelete, setSelectDelete] = useState("")
+    const [showDelete, setShowDelete] = useState(false)
+
+    async function handleDelete() {
+        try {
+            const docRef = doc(db, "laporan", selectDelete)
+            await deleteDoc(docRef)
+            console.log("berhasil hapus yeyyy")
+            setRefreshLaporan(prev => !prev)
+            setShowDelete(false)
+            setSelectDelete("")
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return(
-        <LaporContext.Provider value={{ show, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
+        <LaporContext.Provider value={{ show, setSelectDelete, showDelete, setShowDelete, handleDelete, loading, setLoading, sort, setSort, showAnalisis, refreshLaporan, setRefreshLaporan, setShowAnalisis, setShow, fetchDiskusi, analisisLaporan, hasilLaporAnalisis, search, setSearch, filter, setFilter, handleSubmit, resetForm, judul, setJudul, deskripsi, setDeskripsi, alamat, setAlamat, setKategori, setFile, file, isAdmin, showStatus, setShowStatus }}>
             {children}
         </LaporContext.Provider>
     )
