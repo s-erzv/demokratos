@@ -184,12 +184,10 @@ const PolicyVoting = () => {
 
           <div className="relative z-10 max-w-2xl">
              
-            {/* Judul Header: Kecil di mobile, besar di desktop */}
             <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-gray-800">
                 Voting Kebijakan
             </h1>
 
-            {/* Paragraf Header: Kecil di mobile, besar di desktop */}
             <p className="text-sm sm:text-lg text-gray-600 mt-2">
               Baca, pahami, lalu berikan suara Anda. Partisipasi Anda adalah wujud demokrasi.
             </p>
