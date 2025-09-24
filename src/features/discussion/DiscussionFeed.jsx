@@ -15,6 +15,9 @@ const DiscussionFeed = () => {
   const [searchTerm, setSearchTerm] = useState(''); 
   const [filter, setFilter] = useState(null);     
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  const triggerRefresh = () => setRefreshKey(prevKey => prevKey + 1);
 
   const filterDisplayNames = {
     policy: 'Kebijakan',
@@ -51,16 +54,15 @@ const DiscussionFeed = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, filter]); // <-- Dependensi untuk useCallback
+  }, [searchTerm, filter]); 
 
-  // useEffect sekarang hanya bertugas memanggil fetchPosts
   useEffect(() => {
     fetchPosts();
-  }, [fetchPosts]); // <-- Akan fetch ulang jika search/filter berubah
+  }, [fetchPosts, refreshKey]); 
 
   const handleFilterSelect = (type) => {
     setFilter(prevFilter => prevFilter === type ? null : type);
-    setIsFilterOpen(false); // Tutup dropdown setelah memilih
+    setIsFilterOpen(false); 
   };
 
   return (
@@ -149,7 +151,7 @@ const DiscussionFeed = () => {
     </div>
   </header>
 
-  {isAdmin && <AdminReportFeed />}
+  {isAdmin && <AdminReportFeed onPostAction={triggerRefresh} />}
         
     {/* Daftar Post: Dengan loading & empty state yang lebih baik */}
     {loading ? (

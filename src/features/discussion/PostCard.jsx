@@ -8,7 +8,6 @@ import { useState, useEffect } from 'react';
 import ReportModal from './ReportModal';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import CreateCommentForm from './CreateCommentForm';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import ConfirmationModal from '../../components/styling/confirmationModal';
 
@@ -110,10 +109,6 @@ const PostCard = ({ post, onUpdate }) => {
       setIsLiking(false);
     };
 
-    const handleInteractionClick = (e) => {
-      // Mencegah navigasi saat mengklik tombol di dalam kartu
-      e.stopPropagation(); 
-    };
 
     const handleReportClick = async (e) => {
       e.stopPropagation();
@@ -127,30 +122,41 @@ const PostCard = ({ post, onUpdate }) => {
     const confirmDelete = async () => {
       if (!currentUser) {
         alert("Sesi pengguna tidak ditemukan. Silakan login ulang.");
-        setIsDeleting(false);
-        setIsConfirmModalOpen(false);
         return;
       }
-
+  
       setIsDeleting(true);
       try {
-        if (!currentUser) throw new Error("Sesi tidak ditemukan. Harap login ulang.");
-        await currentUser.getIdToken(true);
-        const functions = getFunctions();
-        const deletePostCallable = httpsCallable(functions, 'deletePost');
-        await deletePostCallable({ postId: post.id });
+        const token = await currentUser.getIdToken();
         
-        if (onUpdate) onUpdate(); // Refresh feed
-        // Tidak perlu alert, modal akan ditutup
+        // 1. Simpan respon dari fetch ke dalam variabel
+        const response = await fetch('https://deletepost-coqylgrhwq-uc.a.run.app', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ postId: post.id })
+        });
+  
+        // 2. Periksa apakah responnya sukses (status 2xx)
+        if (!response.ok) {
+          // Jika tidak, coba baca pesan error dari server dan lemparkan sebagai error
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Gagal menghapus post.');
+        }
+        
+        // Jika sukses, baru refresh UI
+        if (onUpdate) onUpdate();
         
       } catch (error) {
         console.error("Error memanggil fungsi deletePost:", error);
-        alert(`Gagal menghapus diskusi: ${error.message}`); // Biarkan alert untuk error tak terduga
+        alert(`Gagal menghapus diskusi: ${error.message}`);
       } finally {
         setIsDeleting(false);
-        setIsConfirmModalOpen(false); // Tutup modal
+        setIsConfirmModalOpen(false);
       }
-    };
+  };
 
     const handleDeleteClick = (e) => {
       e.stopPropagation();

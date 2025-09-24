@@ -6,8 +6,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import { useAuth } from "../../hooks/AuthContext";
 
 const ReportedPostCard = ({ report, onActionTaken}) => {
-  const { currentUser, isAdmin } = useAuth();
-
+  const { currentUser } = useAuth();
   const [modalState, setModalState] = useState({
     isOpen: false,
     title: '',
@@ -21,19 +20,20 @@ const ReportedPostCard = ({ report, onActionTaken}) => {
   const confirmDeletePost = async () => {
     if (!currentUser) {
       alert("Sesi pengguna tidak ditemukan. Silakan login ulang.");
-      setIsDeleting(false);
-      setIsConfirmModalOpen(false);
       return;
     }
 
     setLoadingAction(true);
     try {
-      if (!currentUser) throw new Error("Sesi tidak ditemukan. Harap login ulang.");
-      await currentUser.getIdToken(true);
-
-      const functions = getFunctions();
-      const deletePostCallable = httpsCallable(functions, 'deletePost');
-      await deletePostCallable({ postId: report.postId });
+      const token = await currentUser.getIdToken(); // Ambil token
+      await fetch('https://deletepost-coqylgrhwq-uc.a.run.app', { // <-- Ganti dengan URL fungsimu
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ postId: report.postId })
+      });
       if (onActionTaken) onActionTaken();
     } catch (error) {
       console.error("Error menghapus post:", error);
@@ -47,20 +47,21 @@ const ReportedPostCard = ({ report, onActionTaken}) => {
   const confirmDismissReport = async () => {
     if (!currentUser) {
       alert("Sesi pengguna tidak ditemukan. Silakan login ulang.");
-      setIsDeleting(false);
-      setIsConfirmModalOpen(false);
       return;
     }
     
     setLoadingAction(true);
     try {
-      if (!currentUser) throw new Error("Sesi tidak ditemukan. Harap login ulang.");
-            await currentUser.getIdToken(true);
-
-      const functions = getFunctions();
-      const dismissReportCallable = httpsCallable(functions, 'dismissReport');
-      await dismissReportCallable({ reportId: report.id });
-      if (onActionTaken) onActionTaken(); // Refresh daftar laporan
+      const token = await currentUser.getIdToken(); // Ambil token
+      await fetch('https://dismissreport-coqylgrhwq-uc.a.run.app', { // <-- Ganti dengan URL fungsimu
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ reportId: report.id })
+      });
+      if (onActionTaken) onActionTaken();
     } catch (error) {
       console.error("Gagal mengabaikan laporan:", error);
       alert(`Gagal mengabaikan laporan: ${error.message}`);

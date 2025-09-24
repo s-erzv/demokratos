@@ -5,7 +5,7 @@ import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import ReportedPostCard from './ReportedPostCard';
 
-const AdminReportFeed = () => {
+const AdminReportFeed = ({onPostAction}) => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,6 +30,14 @@ const AdminReportFeed = () => {
     fetchReports();
   }, [fetchReports]);
 
+  const handleActionTaken = () => {
+    fetchReports();
+    
+    if (onPostAction) {
+      onPostAction();
+    }
+  };
+
   if (loading) return <p className="text-center text-orange-700">Memuat laporan...</p>;
 
   return (
@@ -38,7 +46,7 @@ const AdminReportFeed = () => {
       {reports.length > 0 ? (
         <div className="space-y-4">
           {reports.map(report => 
-            <ReportedPostCard key={report.id} report={report} onActionTaken={fetchReports} />
+            <ReportedPostCard key={report.id} report={report} onActionTaken={handleActionTaken}  />
           )}
         </div>
       ) : (
