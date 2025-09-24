@@ -7,7 +7,7 @@ import { db } from '../firebase'; // db masih dibutuhkan untuk fetch data policy
 import { doc, getDoc } from 'firebase/firestore'; // import yang relevan masih dipertahankan
 import { Loader2, Users, Download, ArrowLeft, BarChart3, Search, Send } from 'lucide-react';
 import VotingModal from '../components/VotingModal';
-import { useVoting } from '../hooks/useVoting';
+import { useVoting } from '../features/policy-voting/hooks/useVoting';
 import { useAuth } from '../hooks/AuthContext';
 import PolicyDiscussionList from '../features/discussion/PolicyDiscussionList';
 import DiscussionForm from '../features/discussion/DiscussionForm';
