@@ -268,66 +268,6 @@ exports.votePolicy = functions.https.onRequest((req, res) => {
     });
 });
 
-exports.getSentimentAnalysis = functions.https.onRequest((req, res) => {
-    cors(req, res, async () => {
-        if (!genAI) {
-            return res.status(500).json({ status: 'error', message: 'Layanan AI tidak terinisialisasi.' });
-        }
-        
-        if (req.method !== 'POST') {
-            return res.status(405).send({ status: 'error', message: 'Method Not Allowed' });
-        }
-
-        const { policyId } = req.body;
-        if (!policyId) {
-            return res.status(400).json({ status: 'error', message: 'ID kebijakan wajib disertakan.' });
-        }
-
-        try {
-            const policyRef = db.collection('policies').doc(policyId);
-            const policySnap = await policyRef.get();
-            if (!policySnap.exists) {
-                return res.status(404).json({ status: 'error', message: 'Kebijakan tidak ditemukan.' });
-            }
-            const policyData = policySnap.data();
-
-            const MIN_PARTICIPATION = 5; 
-            const totalVotesCount = (policyData.votesYes || 0) + (policyData.votesNo || 0);
-
-            if (totalVotesCount < MIN_PARTICIPATION) {
-                 return res.status(200).json({ status: 'success', report: `Analisis membutuhkan minimal ${MIN_PARTICIPATION} suara. Saat ini hanya ada ${totalVotesCount} suara.` });
-            }
-
-            const votesSnapshot = await db.collection('votes').where('policyId', '==', policyId).get();
-            const reasons = votesSnapshot.docs
-                .map(doc => doc.data())
-                .filter(data => data.reason && data.reason.trim().length > 0)
-                .map(data => `[${data.choice.toUpperCase()}]: ${data.reason.trim()}`);
-            
-            const reasonsText = reasons.length > 0 ? reasons.join('\n') : 'Tidak ada alasan tambahan yang dicatat.';
-
-            const aiPrompt = `
-                Analisis sentimen untuk kebijakan: "${policyData.title}".
-                Data: Total Setuju ${policyData.votesYes}, Total Tidak Setuju ${policyData.votesNo}.
-                Aspirasi:
-                ${reasonsText}
-
-                TUGAS: Hasilkan SATU paragraf ringkas (max 10 kalimat) dalam Bahasa Indonesia yang merangkum sentimen mayoritas, maksimal 2 tema utama dari aspirasi, dan satu rekomendasi singkat. Output harus berupa plain text satu paragraf tanpa karakter Markdown (*, #, -, :).`;
-
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-            const result = await model.generateContent(aiPrompt);
-            const response = await result.response;
-            const sentimentReport = response.text();
-
-            return res.status(200).json({ status: 'success', report: sentimentReport });
-
-        } catch (err) {
-            console.error("Error generating sentiment analysis:", err);
-            return res.status(500).json({ status: 'error', message: `Gagal memproses analisis sentimen. Error: ${err.message}.` });
-        }
-    });
-});
-
 exports.deletePost = functions.https.onCall(async (data, context) => {
     // 1. Pastikan pengguna sudah login
     if (!context.auth) {

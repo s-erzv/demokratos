@@ -6,7 +6,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { PlusCircle, Search, SlidersHorizontal, Loader2, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Card from '../components/Card'; 
-import { usePolicyActions } from '../hooks/usePolicyActions'; 
+import { usePolicyActions } from '../features/policy-voting/hooks/usePolicyActions'; 
 
 const HorizontalScrollContainer = ({ children }) => (
   <div className="overflow-x-auto whitespace-nowrap pb-4" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useAuth } from './AuthContext'; 
+import { useAuth } from '../../../hooks/AuthContext'; 
 
 const CF_VOTE_URL = 'https://us-central1-demokratos-5b0ce.cloudfunctions.net/votePolicy'; 
 

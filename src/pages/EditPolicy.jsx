@@ -3,7 +3,7 @@ import MainLayout from '../components/MainLayout';
 import FloatingLabelInput from '../components/styling/FloatingLabelInput';
 import { UploadCloud, ChevronDown, Loader2 } from 'lucide-react'; 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUpdatePolicy } from '../hooks/useUpdatePolicy'; 
+import { useUpdatePolicy } from '../features/policy-voting/hooks/useUpdatePolicy'; 
 
 const InputStyle = "w-full border border-gray-300 rounded-full py-2.5 px-4 bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all";
 
