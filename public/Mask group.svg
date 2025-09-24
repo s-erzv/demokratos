@@ -1,0 +1,21 @@
+<svg width="567" height="988" viewBox="0 0 567 988" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="mask0_483_107" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="567" height="988">
+<rect width="567" height="988" rx="30" fill="#171717"/>
+</mask>
+<g mask="url(#mask0_483_107)">
+<g filter="url(#filter0_f_483_107)">
+<circle cx="519" cy="107" r="387" fill="url(#paint0_radial_483_107)"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_483_107" x="-368" y="-780" width="1774" height="1774" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="250" result="effect1_foregroundBlur_483_107"/>
+</filter>
+<radialGradient id="paint0_radial_483_107" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(519 107) rotate(90) scale(387)">
+<stop stop-color="#FF0000"/>
+<stop offset="1" stop-color="#FF0000" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>
